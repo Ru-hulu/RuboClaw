@@ -47,10 +47,12 @@ async def main() -> None:
         args=[str(server_path)],
     )
 
+    print(f"[mcp] connect server: {config.name}")
+    print(f"[mcp] command: {config.command} {config.args}")
     async with MCPClientRuntime(config) as runtime:
         registry = ToolRegistry(await load_mcp_tools(runtime))
 
-        print("Registered MCP-backed tools:")
+        print("[mcp] registered tools:")
         for name in registry.names:
             print(f"- {name}")
 
@@ -76,6 +78,7 @@ async def main() -> None:
                 },
             ],
             registry,
+            trace=True,
         )
         if answer is None:
             raise RuntimeError("LLM MCP tool loop did not produce a final answer.")
