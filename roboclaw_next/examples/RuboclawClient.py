@@ -4,13 +4,13 @@ Run with DeepSeek:
 
     DEEPSEEK_API_KEY=... ROBOCLAW_LLM_PROVIDER=deepseek PYTHONPATH=. \
         uv run --no-project --with openai --with "mcp[cli]<2" \
-        python roboclaw_next/examples/mcp_tool_call_demo.py
+        python roboclaw_next/examples/RuboclawClient.py
 
 Run with OpenAI:
 
     OPENAI_API_KEY=... ROBOCLAW_LLM_PROVIDER=openai PYTHONPATH=. \
         uv run --no-project --with openai --with "mcp[cli]<2" \
-        python roboclaw_next/examples/mcp_tool_call_demo.py
+        python roboclaw_next/examples/RuboclawClient.py
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 from typing import cast
 
-from roboclaw_next.agent import AgentMessage, AgentSession, run_tool_call_loop
+from roboclaw_next.agent import AgentMessage, AgentRuntime, AgentSession
 from roboclaw_next.llm import create_llm_provider
 from roboclaw_next.llm.types import ProviderName
 from roboclaw_next.tools import (
@@ -71,23 +71,28 @@ async def main() -> None:
                         "After tool execution, answer the user in Chinese."
                     ),
                 ),
-                AgentMessage(
-                    role="user",
-                    content="请使用 MCP 工具计算 19 + 23，并告诉我最终结果。",
-                ),
             ]
         )
-        answer = await run_tool_call_loop(
-            provider,
-            session,
-            registry,
-            trace=True,
-        )
-        if answer is None:
-            raise RuntimeError("LLM MCP tool loop did not produce a final answer.")
+        agent_runtime = AgentRuntime(provider, registry)
 
-        print("\nFinal answer:")
-        print(answer)
+        print("\nEnter /exit to quit.")
+        while True:
+            try:
+                user_input = (await asyncio.to_thread(input, "\nYou: ")).strip()
+            except EOFError:
+                break
+            if user_input == "/exit":
+                break
+            if not user_input:
+                continue
+
+            session.append(AgentMessage(role="user", content=user_input))
+            answer = await agent_runtime.run(session, trace=True)
+            if answer is None:
+                raise RuntimeError("LLM MCP tool loop did not produce a final answer.")
+
+            print("\nAssistant:")
+            print(answer)
 
 
 if __name__ == "__main__":

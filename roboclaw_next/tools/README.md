@@ -24,5 +24,5 @@ The main end-to-end example is:
 ```bash
 DEEPSEEK_API_KEY=... ROBOCLAW_LLM_PROVIDER=deepseek PYTHONPATH=. \
     uv run --no-project --with openai --with "mcp[cli]<2" \
-    python roboclaw_next/examples/mcp_tool_call_demo.py
+    python roboclaw_next/examples/RuboclawClient.py
 ```

@@ -56,3 +56,9 @@ LLM API 本身通常不保留上一次调用的内容。每次调用模型前，
 ### 5. 当前实现范围
 
 目前 `AgentSession` 已接入 Agent Loop：模型响应、工具调用和工具结果都会写回 Session，工具执行上下文也会携带 `session_id`。当前尚未实现 `ContextBuilder`、自动摘要、token 预算、持久化和向量检索。下一步实现一个只负责组装上下文的最小 ContextBuilder，后续根据实际需求逐步扩展。
+
+## Agent Runtime
+
+`AgentRuntime` 持有 `provider` 和 `tool_registry`，并通过 `run(session)` 驱动模型调用、工具执行和消息回填。MCP connection 仍由外层 `MCPClientRuntime` 管理，Runtime 通过已经注册的 MCP Tool 间接使用该连接。
+
+当前 Runtime 只负责单个 Session 的串行执行循环。MCP Demo 会在同一条 MCP connection 中持续读取用户输入，并针对同一个 Session 重复调用 `run(session)`，从而保留多轮交互历史。上下文选择、任务状态和并发调度暂不属于这一版实现。

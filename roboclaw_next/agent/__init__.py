@@ -1,7 +1,7 @@
 """Agent loop prototypes for RoboClaw Next."""
 
 from roboclaw_next.agent.message import AgentMessage, MessageRole
+from roboclaw_next.agent.runtime import AgentRuntime
 from roboclaw_next.agent.session import AgentSession
-from roboclaw_next.agent.tool_loop import run_tool_call_loop
 
-__all__ = ["AgentMessage", "AgentSession", "MessageRole", "run_tool_call_loop"]
+__all__ = ["AgentMessage", "AgentRuntime", "AgentSession", "MessageRole"]
