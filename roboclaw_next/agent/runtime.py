@@ -8,7 +8,7 @@ from roboclaw_next.agent.context_builder import ContextBuilder
 from roboclaw_next.agent.message import AgentMessage
 from roboclaw_next.agent.session import AgentSession
 from roboclaw_next.llm.openai_compatible import LLMProvider
-from roboclaw_next.tools import ToolExecutionContext, ToolRegistry
+from roboclaw_next.tools import ToolExecutionContext, ToolRegistry, ToolResult
 
 
 class AgentRuntime:
@@ -74,11 +74,19 @@ class AgentRuntime:
                 )
                 if trace:
                     print(f"[tool] call {tool_call.name} with {tool_call.arguments}")
-                result = await self.tool_registry.invoke(
-                    tool_call.name,
-                    tool_call.arguments,
-                    context,
-                )
+                try:
+                    result = await self.tool_registry.invoke(
+                        tool_call.name,
+                        tool_call.arguments,
+                        context,
+                    )
+                except Exception as exc:
+                    # 即使工具调用抛出 Python 异常，也必须生成配对的 tool
+                    # message，否则后续发送给 LLM 的消息序列是不完整的。
+                    result = ToolResult(
+                        content=f"Tool execution failed: {exc}",
+                        is_error=True,
+                    )
                 if trace:
                     print(f"[tool] result: {result.as_text()}")
                 session.append(

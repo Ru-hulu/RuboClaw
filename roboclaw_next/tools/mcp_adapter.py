@@ -111,6 +111,8 @@ def mcp_call_result_to_tool_result(
         details["tool_call_id"] = context.tool_call_id
     return ToolResult(
         content=text,
+        # MCP 工具执行失败仍会返回 CallToolResult，这里保留错误状态，
+        # 让 Runtime 后续把错误作为配对的 tool message 交还给 LLM。
         is_error=bool(getattr(result, "isError", False)),
         structured_content=structured if isinstance(structured, dict) else None,
         details=details,

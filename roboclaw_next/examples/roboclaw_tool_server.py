@@ -46,7 +46,12 @@ async def add_integers(
 ) -> AdditionResult:
     """Run the standalone integer addition program."""
 
-    program_path = Path(__file__).with_name("integer_addition.py")
+    program_path = (
+        Path(__file__).resolve().parents[1]
+        / "tools"
+        / "programs"
+        / "integer_addition.py"
+    )
     process = await asyncio.create_subprocess_exec(
         sys.executable,
         str(program_path),

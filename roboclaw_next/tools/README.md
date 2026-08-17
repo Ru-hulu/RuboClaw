@@ -16,6 +16,7 @@ AgentTool
 - `registry.py`: registers tools and invokes them by name.
 - `mcp_runtime.py`: connects to a stdio MCP server with the official Python MCP SDK.
 - `mcp_adapter.py`: converts MCP tools into the same `AgentTool` shape.
+- `programs/`: contains standalone programs invoked by concrete MCP tools.
 
 ## MCP Tool-Call Chain
 
