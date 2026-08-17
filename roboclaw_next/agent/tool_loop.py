@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
+from roboclaw_next.agent.session import AgentSession
 from roboclaw_next.llm.openai_compatible import LLMProvider
 from roboclaw_next.tools import ToolExecutionContext, ToolRegistry
 
 
 async def run_tool_call_loop(
     provider: LLMProvider,
-    messages: list[dict[str, Any]],
+    session: AgentSession,
     tool_registry: ToolRegistry,
     *,
     max_iterations: int = 4,
@@ -18,7 +19,6 @@ async def run_tool_call_loop(
 ) -> str | None:
     """Run LLM -> tool call -> tool result -> LLM until a final answer is produced."""
 
-    current_messages = list(messages)
     # 这里需要 max_iterations，是为了防止 Agent 进入无限工具调用循环。
     for iteration in range(1, max_iterations + 1):
         tool_definitions = tool_registry.definitions()
@@ -31,17 +31,17 @@ async def run_tool_call_loop(
         # task = asyncio.create_task(provider.chat_with_retry(...))
         # 然后在真正需要结果的位置再写：response = await task
         response = await provider.chat_with_retry(
-            current_messages,
+            session.messages,
             tools=tool_definitions,
         )
         if trace:
             print(f"[llm] finish_reason: {response.finish_reason}")
             print(f"[llm] tool_calls: {[tool_call.name for tool_call in response.tool_calls]}")
         if not response.has_tool_calls:
-            current_messages.append({"role": "assistant", "content": response.content})
+            session.append({"role": "assistant", "content": response.content})
             return response.content
 
-        current_messages.append(
+        session.append(
             {
                 "role": "assistant",
                 "content": response.content,
@@ -49,13 +49,16 @@ async def run_tool_call_loop(
             }
         )
         for tool_call in response.tool_calls:
-            context = ToolExecutionContext(tool_call_id=tool_call.id)
+            context = ToolExecutionContext(
+                tool_call_id=tool_call.id,
+                session_id=session.session_id,
+            )
             if trace:
                 print(f"[tool] call {tool_call.name} with {tool_call.arguments}")
             result = await tool_registry.invoke(tool_call.name, tool_call.arguments, context)
             if trace:
                 print(f"[tool] result: {result.as_text()}")
-            current_messages.append(
+            session.append(
                 {
                     "role": "tool",
                     "tool_call_id": tool_call.id,

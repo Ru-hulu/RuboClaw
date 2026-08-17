@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 from typing import cast
 
-from roboclaw_next.agent import run_tool_call_loop
+from roboclaw_next.agent import AgentSession, run_tool_call_loop
 from roboclaw_next.llm import create_llm_provider
 from roboclaw_next.llm.types import ProviderName
 from roboclaw_next.tools import (
@@ -61,9 +61,8 @@ async def main() -> None:
             temperature=0,
             max_tokens=1024,
         )
-        answer = await run_tool_call_loop(
-            provider,
-            [
+        session = AgentSession(
+            messages=[
                 {
                     "role": "system",
                     "content": (
@@ -76,7 +75,11 @@ async def main() -> None:
                     "role": "user",
                     "content": "请使用 MCP 工具计算 19 + 23，并告诉我最终结果。",
                 },
-            ],
+            ]
+        )
+        answer = await run_tool_call_loop(
+            provider,
+            session,
             registry,
             trace=True,
         )
