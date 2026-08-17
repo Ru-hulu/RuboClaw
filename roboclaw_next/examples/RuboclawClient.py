@@ -40,7 +40,7 @@ def resolve_provider_name() -> ProviderName:
 
 
 async def main() -> None:
-    server_path = Path(__file__).with_name("example_mcp_server.py")
+    server_path = Path(__file__).with_name("roboclaw_tool_server.py")
     config = StdioMCPServerConfig(
         name="example_mcp",
         command=sys.executable,
@@ -66,9 +66,8 @@ async def main() -> None:
                 AgentMessage(
                     role="system",
                     content=(
-                        "You are a tool-using assistant. For arithmetic tasks, "
-                        "call the provided tool instead of calculating directly. "
-                        "After tool execution, answer the user in Chinese."
+                        "You are a tool-using assistant. Use the provided tools "
+                        "when appropriate, and answer the user in Chinese."
                     ),
                 ),
             ]
