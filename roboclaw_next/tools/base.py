@@ -43,12 +43,11 @@ class ToolResult:
     def as_text(self) -> str:
         """把工具结果转换为可以放进 LLM tool message 的文本。"""
 
-        if self.structured_content is None:
+        if self.content:
             return self.content
-        structured = json.dumps(self.structured_content, ensure_ascii=False, indent=2)
-        if not self.content:
-            return structured
-        return f"{self.content}\n\nstructured_content:\n{structured}"
+        if self.structured_content is not None:
+            return json.dumps(self.structured_content, ensure_ascii=False, indent=2)
+        return ""
 
 
 class AgentTool(ABC):
@@ -65,9 +64,27 @@ class AgentTool(ABC):
         """暴露给模型的工具说明。"""
 
     @property
+    def title(self) -> str | None:
+        """面向用户展示的可选工具标题。"""
+
+        return None
+
+    @property
     @abstractmethod
     def parameters(self) -> dict[str, Any]:
         """工具输入参数的 JSON Schema object。"""
+
+    @property
+    def output_schema(self) -> dict[str, Any] | None:
+        """工具结构化输出的可选 JSON Schema。"""
+
+        return None
+
+    @property
+    def annotations(self) -> dict[str, Any] | None:
+        """描述工具行为特征的可选元数据。"""
+
+        return None
 
     async def prepare_arguments(self, arguments: dict[str, Any]) -> dict[str, Any]:
         """在正式执行前整理模型传入的参数。

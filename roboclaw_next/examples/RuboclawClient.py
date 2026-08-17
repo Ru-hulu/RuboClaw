@@ -42,7 +42,7 @@ def resolve_provider_name() -> ProviderName:
 async def main() -> None:
     server_path = Path(__file__).with_name("roboclaw_tool_server.py")
     config = StdioMCPServerConfig(
-        name="example_mcp",
+        name="roboclaw_tools",
         command=sys.executable,
         args=[str(server_path)],
     )

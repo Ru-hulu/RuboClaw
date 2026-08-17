@@ -32,7 +32,18 @@ class MCPToolAdapter(AgentTool):
             tool_def.description
             or f'Tool "{tool_def.name}" provided by MCP server "{runtime.config.name}".'
         )
+        self._title = tool_def.title
+        # tool_def.inputSchema 是描述工具输入格式的 Python 字典：它列出参数、
+        # 参数类型和必填项。后续会作为工具定义发送给 LLM。
         self._parameters = tool_def.inputSchema or {"type": "object", "properties": {}}
+        # tool_def.outputSchema 也是一个 Python 字典，用于描述 structuredContent
+        # 应包含哪些结果字段及其类型。
+        self._output_schema = tool_def.outputSchema
+        self._annotations = (
+            tool_def.annotations.model_dump(by_alias=True, exclude_none=True)
+            if tool_def.annotations is not None
+            else None
+        )
 
     @property
     def name(self) -> str:
@@ -43,8 +54,20 @@ class MCPToolAdapter(AgentTool):
         return self._description
 
     @property
+    def title(self) -> str | None:
+        return self._title
+
+    @property
     def parameters(self) -> dict[str, Any]:
         return self._parameters
+
+    @property
+    def output_schema(self) -> dict[str, Any] | None:
+        return self._output_schema
+
+    @property
+    def annotations(self) -> dict[str, Any] | None:
+        return self._annotations
 
     async def invoke(
         self,

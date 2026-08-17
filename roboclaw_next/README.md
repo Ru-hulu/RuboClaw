@@ -14,4 +14,4 @@ Current prototype areas:
 Main tool-call chain:
 
 - `examples/RuboclawClient.py`: interactive LLM tool-call loop over MCP-backed tools.
-- `examples/example_mcp_server.py`: stdio MCP server used by the MCP tool-call demo.
+- `examples/roboclaw_tool_server.py`: stdio MCP server that exposes RoboClaw tools.
