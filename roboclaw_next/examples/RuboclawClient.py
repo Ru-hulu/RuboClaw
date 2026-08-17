@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 from typing import cast
 
-from roboclaw_next.agent import AgentMessage, AgentRuntime, AgentSession
+from roboclaw_next.agent import AgentMessage, AgentRuntime, AgentSession, ContextBuilder
 from roboclaw_next.llm import create_llm_provider
 from roboclaw_next.llm.types import ProviderName
 from roboclaw_next.tools import (
@@ -73,7 +73,8 @@ async def main() -> None:
                 ),
             ]
         )
-        agent_runtime = AgentRuntime(provider, registry)
+        context_builder = ContextBuilder(provider, keep_recent_turns=2)
+        agent_runtime = AgentRuntime(provider, registry, context_builder)
 
         print("\nEnter /exit to quit.")
         while True:

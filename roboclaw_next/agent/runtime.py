@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from roboclaw_next.agent.context_builder import ContextBuilder
 from roboclaw_next.agent.message import AgentMessage
 from roboclaw_next.agent.session import AgentSession
 from roboclaw_next.llm.openai_compatible import LLMProvider
@@ -13,9 +14,15 @@ from roboclaw_next.tools import ToolExecutionContext, ToolRegistry
 class AgentRuntime:
     """持有模型与工具，并驱动一次 Session 的 Agent 执行循环。"""
 
-    def __init__(self, provider: LLMProvider, tool_registry: ToolRegistry) -> None:
+    def __init__(
+        self,
+        provider: LLMProvider,
+        tool_registry: ToolRegistry,
+        context_builder: ContextBuilder,
+    ) -> None:
         self.provider = provider
         self.tool_registry = tool_registry
+        self.context_builder = context_builder
 
     async def run(
         self,
@@ -37,9 +44,10 @@ class AgentRuntime:
                 print(f"[agent] available tools: {_tool_names(tool_definitions)}")
 
             # `await` 会暂停当前协程，直到模型调用完成并返回结果。
-            # 如需让请求在后台执行，应显式使用 asyncio.create_task(...)。
+            # 如需让请求在后台执行，应显式使用 asyncio.create_task(...)
+            context_messages = await self.context_builder.build(session)
             response = await self.provider.chat_with_retry(
-                [message.to_provider_dict() for message in session.messages],
+                [message.to_provider_dict() for message in context_messages],
                 tools=tool_definitions,
             )
             if trace:

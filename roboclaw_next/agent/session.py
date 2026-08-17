@@ -15,6 +15,7 @@ class AgentSession:
     session_id: str = field(default_factory=lambda: uuid4().hex)
     messages: list[AgentMessage] = field(default_factory=list)
     summary: str | None = None
+    summary_cursor: int = 0
 
     def append(self, message: AgentMessage) -> None:
         """将一条新消息追加到当前会话历史。"""

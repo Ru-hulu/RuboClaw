@@ -8,7 +8,7 @@ Current prototype areas:
 
 - `llm/`: minimal OpenAI-compatible provider boundary for OpenAI and DeepSeek.
 - `tools/`: minimal AgentTool, ToolRegistry, and MCP adapter boundary.
-- `agent/`: minimal LLM tool-call loop prototype.
+- `agent/`: AgentMessage, AgentSession, ContextBuilder, and AgentRuntime.
 - `examples/`: small runnable examples for learning each boundary.
 
 Main tool-call chain:
