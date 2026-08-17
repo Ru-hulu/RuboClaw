@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from roboclaw_next.agent.message import AgentMessage
 from roboclaw_next.agent.session import AgentSession
 from roboclaw_next.llm.openai_compatible import LLMProvider
 from roboclaw_next.tools import ToolExecutionContext, ToolRegistry
@@ -31,22 +32,22 @@ async def run_tool_call_loop(
         # task = asyncio.create_task(provider.chat_with_retry(...))
         # 然后在真正需要结果的位置再写：response = await task
         response = await provider.chat_with_retry(
-            session.messages,
+            [message.to_provider_dict() for message in session.messages],
             tools=tool_definitions,
-        )
+        ) # 每次 iteration 都会把 session.messages 中的全部消息重新传给 LLM
         if trace:
             print(f"[llm] finish_reason: {response.finish_reason}")
             print(f"[llm] tool_calls: {[tool_call.name for tool_call in response.tool_calls]}")
         if not response.has_tool_calls:
-            session.append({"role": "assistant", "content": response.content})
+            session.append(AgentMessage(role="assistant", content=response.content))
             return response.content
 
         session.append(
-            {
-                "role": "assistant",
-                "content": response.content,
-                "tool_calls": [tool_call.to_openai_tool_call() for tool_call in response.tool_calls],
-            }
+            AgentMessage(
+                role="assistant",
+                content=response.content,
+                tool_calls=response.tool_calls,
+            )
         )
         for tool_call in response.tool_calls:
             context = ToolExecutionContext(
@@ -59,12 +60,12 @@ async def run_tool_call_loop(
             if trace:
                 print(f"[tool] result: {result.as_text()}")
             session.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": tool_call.name,
-                    "content": result.as_text(),
-                }
+                AgentMessage(
+                    role="tool",
+                    tool_call_id=tool_call.id,
+                    name=tool_call.name,
+                    content=result.as_text(),
+                )
             )
 
     return None

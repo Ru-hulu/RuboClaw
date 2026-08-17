@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 from typing import cast
 
-from roboclaw_next.agent import AgentSession, run_tool_call_loop
+from roboclaw_next.agent import AgentMessage, AgentSession, run_tool_call_loop
 from roboclaw_next.llm import create_llm_provider
 from roboclaw_next.llm.types import ProviderName
 from roboclaw_next.tools import (
@@ -63,18 +63,18 @@ async def main() -> None:
         )
         session = AgentSession(
             messages=[
-                {
-                    "role": "system",
-                    "content": (
+                AgentMessage(
+                    role="system",
+                    content=(
                         "You are a tool-using assistant. For arithmetic tasks, "
                         "call the provided tool instead of calculating directly. "
                         "After tool execution, answer the user in Chinese."
                     ),
-                },
-                {
-                    "role": "user",
-                    "content": "请使用 MCP 工具计算 19 + 23，并告诉我最终结果。",
-                },
+                ),
+                AgentMessage(
+                    role="user",
+                    content="请使用 MCP 工具计算 19 + 23，并告诉我最终结果。",
+                ),
             ]
         )
         answer = await run_tool_call_loop(

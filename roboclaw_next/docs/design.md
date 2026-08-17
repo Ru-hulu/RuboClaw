@@ -22,20 +22,22 @@ LLM API 本身通常不保留上一次调用的内容。每次调用模型前，
 当前 `AgentSession` 只包含以下内容：
 
 - `session_id`：唯一标识一段连续交互，后续可用于查找、恢复和持久化。
-- `messages`：按产生顺序保存消息的数组。
+- `messages`：按产生顺序保存 `AgentMessage` 的数组。
 - `summary`：较早上下文的可选摘要，目前仅作为预留字段。
 - `append(message)`：在新消息产生时，将其追加到 `messages`。
 
-`messages` 的每个元素是一个 Python `dict`，表示一条消息，而不是一整个交互轮次，也不是 JSON 字符串。一轮工具调用可能包含多条消息：
+`messages` 的每个元素是一个 `AgentMessage`，表示一条消息，而不是一整个交互轮次。一轮工具调用可能包含多条消息：
 
 ```python
 [
-    {"role": "user", "content": "计算 19 + 23"},
-    {"role": "assistant", "tool_calls": [...]},
-    {"role": "tool", "content": "42"},
-    {"role": "assistant", "content": "结果是 42"},
+    AgentMessage(role="user", content="计算 19 + 23"),
+    AgentMessage(role="assistant", tool_calls=[...]),
+    AgentMessage(role="tool", content="42", tool_call_id="call-1"),
+    AgentMessage(role="assistant", content="结果是 42"),
 ]
 ```
+
+`AgentMessage` 当前只描述文本消息和工具调用消息。它在模型调用前转换成 OpenAI-compatible 字典，不包含持久化和多模态处理。
 
 因此，`append()` 并不表示一轮交互结束。用户输入、Assistant 工具调用、工具执行结果和最终回答产生时，都会分别追加一条消息。
 
