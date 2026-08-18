@@ -16,7 +16,13 @@ AgentTool
 - `registry.py`: registers tools and invokes them by name.
 - `mcp_runtime.py`: connects to a stdio MCP server with the official Python MCP SDK.
 - `mcp_adapter.py`: converts MCP tools into the same `AgentTool` shape.
-- `programs/`: contains standalone programs invoked by concrete MCP tools.
+- `mcp_server.py`: creates the MCP server and registers concrete tools.
+- `builtin/`: groups each concrete Tool's executable program and MCP contract.
+
+Current built-in capabilities:
+
+- `integer_addition/`: standalone addition program and its MCP Tool contract.
+- `path_tracking/`: controller, process manager, and three MCP lifecycle Tool skeletons.
 
 ## MCP Tool-Call Chain
 

@@ -18,7 +18,6 @@ from __future__ import annotations
 import asyncio
 import os
 import sys
-from pathlib import Path
 from typing import cast
 
 from roboclaw_next.agent import AgentMessage, AgentRuntime, AgentSession, ContextBuilder
@@ -40,11 +39,10 @@ def resolve_provider_name() -> ProviderName:
 
 
 async def main() -> None:
-    server_path = Path(__file__).with_name("roboclaw_tool_server.py")
     config = StdioMCPServerConfig(
         name="roboclaw_tools",
         command=sys.executable,
-        args=[str(server_path)],
+        args=["-m", "roboclaw_next.tools.mcp_server"],
     )
 
     print(f"[mcp] connect server: {config.name}")

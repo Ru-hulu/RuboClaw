@@ -1,4 +1,4 @@
-"""A standalone integer addition program used by the MCP tool example."""
+"""Standalone integer addition program."""
 
 from __future__ import annotations
 
