@@ -59,6 +59,7 @@ class MPCConfig:
     finite_difference_epsilon: float = 1e-3
     convergence_tolerance: float = 1e-5
 
+    # 在配置对象创建后统一校验数值合法性，避免求解器使用无效参数。
     def __post_init__(self) -> None:
         positive_values = {
             "dt": self.dt,
@@ -88,12 +89,14 @@ class MPCConfig:
                 raise ValueError(f"{name} must not be negative")
 
 
+# 将任意角度折算到 [-pi, pi) 区间，便于计算航向差和角度误差。
 def normalize_angle(angle: float) -> float:
     """Normalize an angle to [-pi, pi)."""
 
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
 
+# 根据左右轮线速度和差速运动学模型，预测一个时间步后的机器人位姿。
 def propagate(
     pose: Pose2D,
     left_speed: float,
@@ -117,11 +120,13 @@ def propagate(
 class DifferentialDriveMPC:
     """Finite-horizon path tracker with wheel speed and acceleration limits."""
 
+    # 初始化 MPC 控制器，并保存上一周期轮速和上一次解作为 warm-start 状态。
     def __init__(self, config: MPCConfig | None = None) -> None:
         self.config = config or MPCConfig()
         self._previous_wheels = (0.0, 0.0)
         self._last_solution: list[tuple[float, float]] | None = None
 
+    # 开始新路径前重置 warm-start；可选地用上一条真实命令作为轮速基准。
     def reset(self, previous_command: WheelCommand | None = None) -> None:
         """Clear warm-start state before beginning a new path."""
 
@@ -134,6 +139,7 @@ class DifferentialDriveMPC:
             )
         self._last_solution = None
 
+    # 执行一次 MPC 求解：整理参考轨迹、优化未来轮速序列，并返回第一条命令。
     def solve(
         self,
         current_pose: Pose2D,
@@ -191,6 +197,7 @@ class DifferentialDriveMPC:
             converged=converged,
         )
 
+    # 将参考轨迹整理成 horizon + 1 个位姿，过长截断、过短用终点补齐。
     def _prepare_reference(
         self,
         reference_poses: Sequence[Pose2D],
@@ -203,6 +210,7 @@ class DifferentialDriveMPC:
         reference.extend([reference[-1]] * (required_size - len(reference)))
         return reference
 
+    # 根据参考轨迹相邻位姿估计初始轮速；若有上次解则平移复用作为 warm start。
     def _initial_controls(
         self,
         reference: Sequence[Pose2D],
@@ -225,6 +233,7 @@ class DifferentialDriveMPC:
             )
         return controls
 
+    # 将候选轮速投影到速度和加速度约束内，保证控制序列物理可执行。
     def _project_controls(
         self,
         controls: Sequence[tuple[float, float]],
@@ -258,6 +267,7 @@ class DifferentialDriveMPC:
             previous_left, previous_right = left_speed, right_speed
         return projected
 
+    # 从当前位姿开始按候选轮速序列向前仿真，得到有限时域预测轨迹。
     def _rollout(
         self,
         initial_pose: Pose2D,
@@ -276,6 +286,7 @@ class DifferentialDriveMPC:
             )
         return poses
 
+    # 计算候选控制序列总代价：轨迹误差、航向误差、轮速大小和轮速变化。
     def _cost(
         self,
         current_pose: Pose2D,
@@ -314,6 +325,7 @@ class DifferentialDriveMPC:
             previous_left, previous_right = left_speed, right_speed
         return total
 
+    # 对每个轮速变量做有限差分扰动，估计代价关于控制序列的梯度。
     def _finite_difference_gradient(
         self,
         current_pose: Pose2D,
@@ -344,6 +356,7 @@ class DifferentialDriveMPC:
             gradient.append((perturbed_cost - base_cost) / actual_change)
         return gradient
 
+    # 沿负梯度方向尝试不同步长，寻找能降低代价且满足约束的新控制序列。
     def _line_search(
         self,
         current_pose: Pose2D,
@@ -367,6 +380,7 @@ class DifferentialDriveMPC:
             step_size *= 0.5
         return controls, base_cost
 
+    # 将第一组左右轮速度转换成底盘命令，同时计算等效线速度和角速度。
     def _make_command(self, left_speed: float, right_speed: float) -> WheelCommand:
         return WheelCommand(
             left_speed=left_speed,
@@ -376,14 +390,17 @@ class DifferentialDriveMPC:
         )
 
 
+# 将 [(left, right), ...] 控制序列展平成一维列表，便于梯度优化。
 def _flatten(controls: Sequence[tuple[float, float]]) -> list[float]:
     return [speed for pair in controls for speed in pair]
 
 
+# 将一维轮速列表还原成左右轮速度对。
 def _unflatten(values: Sequence[float]) -> list[tuple[float, float]]:
     return [(values[index], values[index + 1]) for index in range(0, len(values), 2)]
 
 
+# 限制梯度向量范数，避免单次优化步过大导致线搜索不稳定。
 def _limit_vector_norm(values: Sequence[float], maximum_norm: float) -> list[float]:
     norm = math.sqrt(sum(value**2 for value in values))
     if norm <= maximum_norm or norm == 0.0:
@@ -392,5 +409,6 @@ def _limit_vector_norm(values: Sequence[float], maximum_norm: float) -> list[flo
     return [value * scale for value in values]
 
 
+# 将数值裁剪到给定闭区间内，用于速度和加速度约束投影。
 def _clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(maximum, value))
