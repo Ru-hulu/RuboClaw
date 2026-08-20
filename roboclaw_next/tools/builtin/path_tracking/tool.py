@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field
@@ -22,6 +24,10 @@ class TrackingStatusResult(BaseModel):
         default=None,
         description="Optional process status or failure information.",
     )
+    reference_path_file: str | None = Field(
+        default=None,
+        description="Hybrid A* JSON path file currently used by MPC.",
+    )
 
 
 def register_path_tracking_tools(
@@ -36,7 +42,10 @@ def register_path_tracking_tools(
         name="start_path_tracking",
         title="Start Path Tracking",
         description=(
-            "Start MPC using the currently configured reference path. "
+            "Start MPC path tracking. If reference_path_file is provided, MPC "
+            "loads that Hybrid A* JSON plan. If it is omitted and the latest "
+            "Hybrid A* plan JSON exists, MPC uses that file automatically. "
+            "Otherwise MPC falls back to its built-in reference path. "
             "Mock localization must already be running. Call "
             "get_mock_localization_status first; if it is not running, call "
             "start_mock_localization before starting path tracking."
@@ -48,10 +57,20 @@ def register_path_tracking_tools(
             openWorldHint=False,
         ),
     )
-    async def start_path_tracking() -> TrackingStatusResult:
+    async def start_path_tracking(
+        reference_path_file: Annotated[
+            str | None,
+            Field(
+                description=(
+                    "Optional Hybrid A* plan JSON file. Omit this to use the "
+                    "latest generated plan when it exists."
+                )
+            ),
+        ] = None,
+    ) -> TrackingStatusResult:
         """Start MPC path tracking after checking localization."""
 
-        return _to_result(await manager.start())
+        return _to_result(await manager.start(reference_path_file))
 
     @mcp.tool(
         name="get_tracking_status",
@@ -92,4 +111,5 @@ def _to_result(status: TrackingStatus) -> TrackingStatusResult:
         pid=status.pid,
         return_code=status.return_code,
         message=status.message,
+        reference_path_file=status.reference_path_file,
     )

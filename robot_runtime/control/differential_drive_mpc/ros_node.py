@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
+from typing import Any
 
 import rclpy
 from geometry_msgs.msg import PoseStamped, Twist
@@ -10,10 +13,17 @@ from rclpy.node import Node
 
 from robot_runtime.debug.rviz_path import DebugPathPublisher
 
-from .controller import DifferentialDriveMPC, MPCConfig, Pose2D, WheelCommand
+from .controller import (
+    DifferentialDriveMPC,
+    MPCConfig,
+    Pose2D,
+    WheelCommand,
+    normalize_angle,
+)
 
 
 PATH_STEPS = 60
+REFERENCE_LINEAR_SPEED = 0.55
 
 
 def _build_reference_path(steps: int, dt: float) -> list[Pose2D]:
@@ -29,6 +39,79 @@ def _build_reference_path(steps: int, dt: float) -> list[Pose2D]:
     return poses
 
 
+def _load_reference_path(path_file: str) -> list[Pose2D]:
+    """Load a Hybrid A* plan JSON file as raw waypoints."""
+
+    path = Path(path_file).expanduser()
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("reference_path_file must contain a JSON object")
+    if payload.get("success") is not True:
+        message = payload.get("message") or "plan is not successful"
+        raise ValueError(
+            f"reference_path_file does not contain a valid plan: {message}"
+        )
+
+    raw_waypoints = payload.get("waypoints")
+    if not isinstance(raw_waypoints, list) or not raw_waypoints:
+        raise ValueError("reference_path_file must contain at least one waypoint")
+
+    waypoints: list[Pose2D] = []
+    for index, raw_waypoint in enumerate(raw_waypoints):
+        if not isinstance(raw_waypoint, dict):
+            raise ValueError(f"waypoint {index} must be a JSON object")
+        waypoint = _decode_waypoint(raw_waypoint, index)
+        waypoints.append(waypoint)
+    return waypoints
+
+
+def _decode_waypoint(raw_waypoint: dict[str, Any], index: int) -> Pose2D:
+    try:
+        waypoint = Pose2D(
+            x=float(raw_waypoint["x"]),
+            y=float(raw_waypoint["y"]),
+            yaw=float(raw_waypoint["yaw"]),
+        )
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError(
+            f"waypoint {index} must contain numeric x, y, and yaw"
+        ) from error
+
+    values = (waypoint.x, waypoint.y, waypoint.yaw)
+    if not all(math.isfinite(value) for value in values):
+        raise ValueError(f"waypoint {index} contains a non-finite value")
+    return waypoint
+
+
+def _resample_reference_path(
+    waypoints: list[Pose2D],
+    *,
+    step_distance: float,
+) -> list[Pose2D]:
+    """Resample sparse planner waypoints into MPC-sized reference steps."""
+
+    if step_distance <= 0:
+        raise ValueError("step_distance must be greater than zero")
+    if len(waypoints) <= 1:
+        return waypoints
+
+    poses = [waypoints[0]]
+    for start, end in zip(waypoints, waypoints[1:]):
+        distance = math.hypot(end.x - start.x, end.y - start.y)
+        segment_steps = max(1, math.ceil(distance / step_distance))
+        yaw_delta = normalize_angle(end.yaw - start.yaw)
+        for step in range(1, segment_steps + 1):
+            ratio = step / segment_steps
+            poses.append(
+                Pose2D(
+                    x=start.x + (end.x - start.x) * ratio,
+                    y=start.y + (end.y - start.y) * ratio,
+                    yaw=normalize_angle(start.yaw + yaw_delta * ratio),
+                )
+            )
+    return poses
+
+
 class DifferentialDriveMPCNode(Node):
     """Publish MPC commands using posture feedback from another ROS node."""
 
@@ -38,10 +121,30 @@ class DifferentialDriveMPCNode(Node):
         self.config = MPCConfig()
         self.controller = DifferentialDriveMPC(self.config)
         self.current_pose: Pose2D | None = None
-        self.reference_path = _build_reference_path(
-            PATH_STEPS + self.config.horizon + 1,
-            self.config.dt,
+        self.declare_parameter("reference_path_file", "")
+        reference_path_file = (
+            self.get_parameter("reference_path_file")
+            .get_parameter_value()
+            .string_value
+            .strip()
         )
+        if reference_path_file:
+            raw_reference_path = _load_reference_path(reference_path_file)
+            self.reference_path = _resample_reference_path(
+                raw_reference_path,
+                step_distance=REFERENCE_LINEAR_SPEED * self.config.dt,
+            )
+            self.reference_path_source = (
+                f"{reference_path_file}: {len(raw_reference_path)} waypoints, "
+                f"{len(self.reference_path)} MPC samples"
+            )
+        else:
+            self.reference_path = _build_reference_path(
+                PATH_STEPS + self.config.horizon + 1,
+                self.config.dt,
+            )
+            self.reference_path_source = "built-in sine reference"
+        self.path_steps = max(1, len(self.reference_path) - 1)
         self.step_index = 0
         self.finished = False
 
@@ -58,11 +161,12 @@ class DifferentialDriveMPCNode(Node):
         )
         self.debug_reference_path_publisher.publish_planar_path(
             (pose.x, pose.y, pose.yaw)
-            for pose in self.reference_path[: PATH_STEPS + 1]
+            for pose in self.reference_path[: self.path_steps + 1]
         )
         self.control_timer = self.create_timer(self.config.dt, self.control_tick)
         self.get_logger().info(
-            f"MPC started: {1.0 / self.config.dt:.1f} Hz, {PATH_STEPS} steps"
+            f"MPC started: {1.0 / self.config.dt:.1f} Hz, "
+            f"{self.path_steps} steps, reference={self.reference_path_source}"
         )
 
     def posture_callback(self, message: PoseStamped) -> None:
@@ -97,7 +201,7 @@ class DifferentialDriveMPCNode(Node):
         if self.current_pose is None:
             return
 
-        if self.step_index >= PATH_STEPS:
+        if self.step_index >= self.path_steps:
             self.finish()
             return
 
@@ -132,12 +236,14 @@ class DifferentialDriveMPCNode(Node):
         self.cmd_vel_publisher.publish(Twist())
 
     def finish(self) -> None:
-        """Stop the controller after the hard-coded path is complete."""
+        """Stop the controller after the reference path is complete."""
 
         self.publish_stop()
         self.control_timer.cancel()
         self.finished = True
-        target = self.reference_path[PATH_STEPS]
+        target = self.reference_path[
+            min(self.path_steps, len(self.reference_path) - 1)
+        ]
         assert self.current_pose is not None
         position_error = math.hypot(
             self.current_pose.x - target.x,

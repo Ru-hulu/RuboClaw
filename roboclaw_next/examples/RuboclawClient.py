@@ -43,6 +43,7 @@ async def main() -> None:
         name="roboclaw_tools",
         command=sys.executable,
         args=["-m", "roboclaw_next.tools.mcp_server"],
+        env=os.environ.copy(),
     )
 
     print(f"[mcp] connect server: {config.name}")
@@ -65,7 +66,9 @@ async def main() -> None:
                     role="system",
                     content=(
                         "You are a tool-using assistant. Use the provided tools "
-                        "when appropriate, and answer the user in Chinese."
+                        "when appropriate, and answer the user in Chinese. "
+                        "When the requested operation has succeeded, give a final "
+                        "answer instead of repeating status checks."
                     ),
                 ),
             ]
@@ -87,7 +90,12 @@ async def main() -> None:
             session.append(AgentMessage(role="user", content=user_input))
             answer = await agent_runtime.run(session, trace=True)
             if answer is None:
-                raise RuntimeError("LLM MCP tool loop did not produce a final answer.")
+                print("\nAssistant:")
+                print(
+                    "工具调用已经达到本轮上限，但客户端会继续运行。"
+                    "你可以继续输入下一条指令，或查询当前状态。"
+                )
+                continue
 
             print("\nAssistant:")
             print(answer)

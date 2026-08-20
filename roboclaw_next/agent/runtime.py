@@ -28,7 +28,7 @@ class AgentRuntime:
         self,
         session: AgentSession,
         *,
-        max_iterations: int = 4,
+        max_iterations: int = 8,
         trace: bool = False,
     ) -> str | None:
         """持续执行模型和工具调用，直到模型给出最终回答。"""

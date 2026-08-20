@@ -22,7 +22,10 @@ AgentTool
 Current built-in capabilities:
 
 - `integer_addition/`: standalone addition program and its MCP Tool contract.
+- `mock_localization/`: simulated localization process and lifecycle Tools.
 - `path_tracking/`: controller, process manager, and three MCP lifecycle Tool skeletons.
+- `hybrid_astar_planner/`: one-shot runner and direct path-planning Tool backed by
+  the standalone C++ Hybrid A* executable.
 
 ## MCP Tool-Call Chain
 
