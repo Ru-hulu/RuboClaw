@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import json
 import math
-from pathlib import Path
-from typing import Any
 
 import rclpy
 from geometry_msgs.msg import PoseStamped, Twist
@@ -18,98 +15,11 @@ from .controller import (
     MPCConfig,
     Pose2D,
     WheelCommand,
-    normalize_angle,
 )
-
-
-PATH_STEPS = 60
-REFERENCE_LINEAR_SPEED = 0.55
-
-
-def _build_reference_path(steps: int, dt: float) -> list[Pose2D]:
-    """Create the hard-coded path followed by this minimal node."""
-
-    linear_speed = 0.55
-    poses: list[Pose2D] = []
-    for index in range(steps):
-        x = linear_speed * dt * index
-        y = 0.35 * math.sin(0.7 * x)
-        slope = 0.35 * 0.7 * math.cos(0.7 * x)
-        poses.append(Pose2D(x=x, y=y, yaw=math.atan(slope)))
-    return poses
-
-
-def _load_reference_path(path_file: str) -> list[Pose2D]:
-    """Load a Hybrid A* plan JSON file as raw waypoints."""
-
-    path = Path(path_file).expanduser()
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError("reference_path_file must contain a JSON object")
-    if payload.get("success") is not True:
-        message = payload.get("message") or "plan is not successful"
-        raise ValueError(
-            f"reference_path_file does not contain a valid plan: {message}"
-        )
-
-    raw_waypoints = payload.get("waypoints")
-    if not isinstance(raw_waypoints, list) or not raw_waypoints:
-        raise ValueError("reference_path_file must contain at least one waypoint")
-
-    waypoints: list[Pose2D] = []
-    for index, raw_waypoint in enumerate(raw_waypoints):
-        if not isinstance(raw_waypoint, dict):
-            raise ValueError(f"waypoint {index} must be a JSON object")
-        waypoint = _decode_waypoint(raw_waypoint, index)
-        waypoints.append(waypoint)
-    return waypoints
-
-
-def _decode_waypoint(raw_waypoint: dict[str, Any], index: int) -> Pose2D:
-    try:
-        waypoint = Pose2D(
-            x=float(raw_waypoint["x"]),
-            y=float(raw_waypoint["y"]),
-            yaw=float(raw_waypoint["yaw"]),
-        )
-    except (KeyError, TypeError, ValueError) as error:
-        raise ValueError(
-            f"waypoint {index} must contain numeric x, y, and yaw"
-        ) from error
-
-    values = (waypoint.x, waypoint.y, waypoint.yaw)
-    if not all(math.isfinite(value) for value in values):
-        raise ValueError(f"waypoint {index} contains a non-finite value")
-    return waypoint
-
-
-def _resample_reference_path(
-    waypoints: list[Pose2D],
-    *,
-    step_distance: float,
-) -> list[Pose2D]:
-    """Resample sparse planner waypoints into MPC-sized reference steps."""
-
-    if step_distance <= 0:
-        raise ValueError("step_distance must be greater than zero")
-    if len(waypoints) <= 1:
-        return waypoints
-
-    poses = [waypoints[0]]
-    for start, end in zip(waypoints, waypoints[1:]):
-        distance = math.hypot(end.x - start.x, end.y - start.y)
-        segment_steps = max(1, math.ceil(distance / step_distance))
-        yaw_delta = normalize_angle(end.yaw - start.yaw)
-        for step in range(1, segment_steps + 1):
-            ratio = step / segment_steps
-            poses.append(
-                Pose2D(
-                    x=start.x + (end.x - start.x) * ratio,
-                    y=start.y + (end.y - start.y) * ratio,
-                    yaw=normalize_angle(start.yaw + yaw_delta * ratio),
-                )
-            )
-    return poses
+from .reference_path import (
+    DEFAULT_REFERENCE_LINEAR_SPEED,
+    load_hybrid_astar_reference_path,
+)
 
 
 class DifferentialDriveMPCNode(Node):
@@ -128,22 +38,18 @@ class DifferentialDriveMPCNode(Node):
             .string_value
             .strip()
         )
-        if reference_path_file:
-            raw_reference_path = _load_reference_path(reference_path_file)
-            self.reference_path = _resample_reference_path(
-                raw_reference_path,
-                step_distance=REFERENCE_LINEAR_SPEED * self.config.dt,
+        if not reference_path_file:
+            raise ValueError(
+                "reference_path_file is required. Run Hybrid A* first or pass "
+                "a Hybrid A* JSON path with "
+                "--ros-args -p reference_path_file:=..."
             )
-            self.reference_path_source = (
-                f"{reference_path_file}: {len(raw_reference_path)} waypoints, "
-                f"{len(self.reference_path)} MPC samples"
-            )
-        else:
-            self.reference_path = _build_reference_path(
-                PATH_STEPS + self.config.horizon + 1,
-                self.config.dt,
-            )
-            self.reference_path_source = "built-in sine reference"
+        reference_path = load_hybrid_astar_reference_path(
+            reference_path_file,
+            step_distance=DEFAULT_REFERENCE_LINEAR_SPEED * self.config.dt,
+        )
+        self.reference_path = list(reference_path.poses)
+        self.reference_path_source = reference_path.source
         self.path_steps = max(1, len(self.reference_path) - 1)
         self.step_index = 0
         self.finished = False

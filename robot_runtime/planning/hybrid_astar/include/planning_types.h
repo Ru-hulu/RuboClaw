@@ -8,11 +8,17 @@
 
 namespace HybridAStar {
 
+enum class MotionDirection {
+  Forward,
+  Reverse,
+};
+
 // 与通信框架无关的二维位姿，位置单位为米，偏航角单位为弧度。
 struct Pose2D {
   double x = 0.0;
   double y = 0.0;
   double yaw = 0.0;
+  MotionDirection direction = MotionDirection::Forward;
 };
 
 // Hybrid A* 使用的二值栅格地图；0 表示可通行，非 0 表示占用。

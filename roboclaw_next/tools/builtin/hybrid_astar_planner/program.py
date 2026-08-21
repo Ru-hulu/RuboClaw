@@ -15,7 +15,7 @@ from .models import HybridAStarPlan
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 PLANNER_ROOT = REPOSITORY_ROOT / "robot_runtime" / "planning" / "hybrid_astar"
-DEFAULT_MAP_PATH = PLANNER_ROOT / "maps" / "map_demo.png"
+DEFAULT_MAP_PATH = PLANNER_ROOT / "maps" / "empty_80x80.png"
 DEFAULT_EXECUTABLE_PATH = PLANNER_ROOT / "build" / "hybrid_astar_plan"
 DEFAULT_PLAN_OUTPUT_PATH = (
     REPOSITORY_ROOT

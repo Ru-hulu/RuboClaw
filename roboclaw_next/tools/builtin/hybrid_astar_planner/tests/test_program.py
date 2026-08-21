@@ -32,12 +32,12 @@ class HybridAStarPlannerRunnerTest(unittest.IsolatedAsyncioTestCase):
                 {
                     "x": float(args["--start-x"]),
                     "y": float(args["--start-y"]),
-                    "yaw": float(args["--start-yaw"]),
+                    "direction": "forward",
                 },
                 {
                     "x": float(args["--goal-x"]),
                     "y": float(args["--goal-y"]),
-                    "yaw": float(args["--goal-yaw"]),
+                    "direction": "forward",
                 },
             ]
             print(json.dumps({
@@ -63,7 +63,7 @@ class HybridAStarPlannerRunnerTest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.waypoint_count, 2)
         self.assertEqual(result.waypoints[0].x, 1.0)
-        self.assertEqual(result.waypoints[-1].yaw, -0.5)
+        self.assertEqual(result.waypoints[-1].direction, "forward")
         self.assertEqual(result.map_path, str(self._map_path.resolve()))
         self.assertEqual(result.path_file, str(self._plan_output_path.resolve()))
         self.assertTrue(self._plan_output_path.is_file())
@@ -175,7 +175,7 @@ class DecodePlanTest(unittest.TestCase):
         payload = b"""{
             "success": true,
             "frame_id": "map",
-            "waypoints": [{"x": NaN, "y": 2, "yaw": 0}],
+            "waypoints": [{"x": NaN, "y": 2, "direction": "forward"}],
             "waypoint_count": 1,
             "map_path": "/tmp/map.png",
             "planning_time_ms": 1,
@@ -183,6 +183,20 @@ class DecodePlanTest(unittest.TestCase):
         }"""
 
         with self.assertRaisesRegex(ValueError, "finite number"):
+            _decode_plan(payload)
+
+    def test_waypoint_direction_must_be_known(self) -> None:
+        payload = b"""{
+            "success": true,
+            "frame_id": "map",
+            "waypoints": [{"x": 1, "y": 2, "direction": "sideways"}],
+            "waypoint_count": 1,
+            "map_path": "/tmp/map.png",
+            "planning_time_ms": 1,
+            "message": "planned"
+        }"""
+
+        with self.assertRaisesRegex(ValueError, "direction"):
             _decode_plan(payload)
 
 

@@ -46,7 +46,7 @@ target_link_libraries(hybrid_astar_core
 add_executable(hybrid_astar_plan src/main.cpp)
 target_compile_options(hybrid_astar_plan PRIVATE -Wall -Wextra -Wpedantic)
 target_compile_definitions(hybrid_astar_plan PRIVATE
-  HYBRID_ASTAR_DEFAULT_MAP_PATH="${CMAKE_CURRENT_SOURCE_DIR}/maps/map_demo.png"
+  HYBRID_ASTAR_DEFAULT_MAP_PATH="${CMAKE_CURRENT_SOURCE_DIR}/maps/empty_80x80.png"
 )
 target_link_libraries(hybrid_astar_plan PRIVATE HybridAStar::core)
 
@@ -57,6 +57,6 @@ install(
 )
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(
-  FILES maps/map_demo.png
+  FILES maps/empty_80x80.png
   DESTINATION ${CMAKE_INSTALL_DATADIR}/hybrid_astar/maps
 )

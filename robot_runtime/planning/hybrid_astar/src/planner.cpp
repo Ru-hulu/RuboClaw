@@ -16,23 +16,160 @@ using namespace HybridAStar;
 
 namespace {
 
+constexpr double kPrimitiveSampleSpacingMeters = 0.3;
+
 double elapsedMilliseconds(const std::chrono::steady_clock::time_point& start) {
   return std::chrono::duration<double, std::milli>(
              std::chrono::steady_clock::now() - start)
       .count();
 }
 
-bool samePose(const Pose2D& left, const Pose2D& right) {
-  constexpr double epsilon = 1e-6;
-  return std::abs(left.x - right.x) < epsilon &&
-         std::abs(left.y - right.y) < epsilon &&
-         std::abs(std::remainder(left.yaw - right.yaw, 2.0 * M_PI)) < epsilon;
+bool isReversePrimitive(int primitive) {
+  return primitive >= Node3D::dir;
 }
 
-void appendDistinct(std::vector<Pose2D>& path, const Pose2D& pose) {
-  if (path.empty() || !samePose(path.back(), pose)) {
-    path.push_back(pose);
+MotionDirection directionFromPrimitive(int primitive) {
+  return isReversePrimitive(primitive) ? MotionDirection::Reverse
+                                       : MotionDirection::Forward;
+}
+
+bool validPrimitive(int primitive) {
+  const int primitiveIndex =
+      isReversePrimitive(primitive) ? primitive - Node3D::dir : primitive;
+  return primitiveIndex >= 0 && primitiveIndex < Node3D::dir;
+}
+
+double primitiveLengthGrid(int primitive) {
+  if (!validPrimitive(primitive)) {
+    return 0.0;
   }
+  return static_cast<double>(Node3D::dx[0]);
+}
+
+Node3D samplePrimitive(
+    const Node3D& parent,
+    int primitive,
+    double distanceGrid) {
+  const bool reverse = isReversePrimitive(primitive);
+  const int primitiveIndex = reverse ? primitive - Node3D::dir : primitive;
+  const double directionSign = reverse ? -1.0 : 1.0;
+  const double parentYaw = parent.getT();
+
+  double localX = 0.0;
+  double localY = 0.0;
+  double yawDelta = 0.0;
+  const double primitiveLength = primitiveLengthGrid(primitive);
+  const double ratio = primitiveLength > 0.0
+                           ? std::clamp(
+                                 distanceGrid / primitiveLength,
+                                 0.0,
+                                 1.0)
+                           : 0.0;
+  const double primitiveYawDelta =
+      static_cast<double>(Node3D::dt[primitiveIndex]);
+
+  if (std::abs(primitiveYawDelta) < 1e-9) {
+    localX = directionSign * distanceGrid;
+  } else {
+    yawDelta = (reverse ? -primitiveYawDelta : primitiveYawDelta) * ratio;
+    const double radius = primitiveLength / std::abs(primitiveYawDelta);
+    const double absYawDelta = std::abs(yawDelta);
+    const double yawSign = yawDelta >= 0.0 ? 1.0 : -1.0;
+    localX = directionSign * radius * std::sin(absYawDelta);
+    localY =
+        -directionSign * yawSign * radius * (1.0 - std::cos(absYawDelta));
+  }
+
+  const double cosYaw = std::cos(parentYaw);
+  const double sinYaw = std::sin(parentYaw);
+  return Node3D(
+      static_cast<float>(parent.getX() + localX * cosYaw - localY * sinYaw),
+      static_cast<float>(parent.getY() + localX * sinYaw + localY * cosYaw),
+      Helper::normalizeHeadingRad(static_cast<float>(parentYaw + yawDelta)),
+      0,
+      0,
+      nullptr,
+      primitive);
+}
+
+double poseDistanceGrid(const Node3D& left, const Node3D& right) {
+  return std::hypot(
+      static_cast<double>(right.getX() - left.getX()),
+      static_cast<double>(right.getY() - left.getY()));
+}
+
+bool sameGridPose(
+    const Node3D& node,
+    const Pose2D& pose,
+    double resolution) {
+  constexpr double positionTolerance = 1e-6;
+  constexpr double yawTolerance = 1e-6;
+  const double x = pose.x / resolution;
+  const double y = pose.y / resolution;
+  return std::hypot(node.getX() - x, node.getY() - y) < positionTolerance &&
+         std::abs(std::remainder(node.getT() - pose.yaw, 2.0 * M_PI)) <
+             yawTolerance;
+}
+
+bool matchesPrimitiveEndpoint(
+    const Node3D& parent,
+    const Node3D& child,
+    int primitive) {
+  if (!validPrimitive(primitive)) {
+    return false;
+  }
+
+  const Node3D expected =
+      samplePrimitive(parent, primitive, primitiveLengthGrid(primitive));
+  constexpr double positionTolerance = 1e-3;
+  constexpr double yawTolerance = 1e-3;
+  return poseDistanceGrid(expected, child) < positionTolerance &&
+         std::abs(std::remainder(expected.getT() - child.getT(), 2.0 * M_PI)) <
+             yawTolerance;
+}
+
+Node3D interpolatePoseSegment(
+    const Node3D& parent,
+    const Node3D& child,
+    int primitive,
+    double ratio) {
+  const double yaw =
+      static_cast<double>(parent.getT()) +
+      std::remainder(
+          static_cast<double>(child.getT() - parent.getT()),
+          2.0 * M_PI) *
+          ratio;
+  return Node3D(
+      static_cast<float>(
+          parent.getX() + (child.getX() - parent.getX()) * ratio),
+      static_cast<float>(
+          parent.getY() + (child.getY() - parent.getY()) * ratio),
+      Helper::normalizeHeadingRad(static_cast<float>(yaw)),
+      0,
+      0,
+      nullptr,
+      primitive);
+}
+
+void normalizeEndpointDirections(std::vector<Pose2D>& path) {
+  if (path.size() < 2) {
+    return;
+  }
+  path.front().direction = path[1].direction;
+  path.back().direction = path[path.size() - 2].direction;
+}
+
+void pinEndpointPositions(
+    std::vector<Pose2D>& path,
+    const Pose2D& start,
+    const Pose2D& goal) {
+  if (path.empty()) {
+    return;
+  }
+  path.front().x = start.x;
+  path.front().y = start.y;
+  path.back().x = goal.x;
+  path.back().y = goal.y;
 }
 
 }  // namespace
@@ -191,19 +328,90 @@ PlanResult Planner::plan(const Pose2D& start, const Pose2D& goal) {
   }
 
   smoother.tracePath(solution);
+  std::vector<Node3D> tracedPath = smoother.getPath();
+  if (!tracedPath.empty() &&
+      !sameGridPose(tracedPath.front(), goal, grid.resolution)) {
+    tracedPath.insert(
+        tracedPath.begin(),
+        Node3D(
+            static_cast<float>(goal.x / grid.resolution),
+            static_cast<float>(goal.y / grid.resolution),
+            Helper::normalizeHeadingRad(static_cast<float>(goal.yaw)),
+            0,
+            0,
+            nullptr,
+            tracedPath.front().getPrim()));
+  }
+  if (!tracedPath.empty() &&
+      !sameGridPose(tracedPath.back(), start, grid.resolution)) {
+    tracedPath.push_back(Node3D(
+        static_cast<float>(start.x / grid.resolution),
+        static_cast<float>(start.y / grid.resolution),
+        Helper::normalizeHeadingRad(static_cast<float>(start.yaw)),
+        0,
+        0,
+        nullptr,
+        tracedPath.back().getPrim()));
+  }
+  smoother.setPath(densifyPrimitivePath(tracedPath));
   smoother.smoothPath(voronoiDiagram);
 
-  appendDistinct(result.waypoints, start);
-  for (const Pose2D& waypoint : toPath(smoother.getPath())) {
-    appendDistinct(result.waypoints, waypoint);
-  }
-  appendDistinct(result.waypoints, goal);
+  result.waypoints = toPath(smoother.getPath());
+  pinEndpointPositions(result.waypoints, start, goal);
+  normalizeEndpointDirections(result.waypoints);
 
   result.success = !result.waypoints.empty();
   result.message = result.success ? "Path planned successfully."
                                   : "Planner returned an empty path.";
   result.planningTimeMs = elapsedMilliseconds(startedAt);
   return result;
+}
+
+std::vector<Node3D> Planner::densifyPrimitivePath(
+    const std::vector<Node3D>& tracedPath) const {
+  if (tracedPath.size() <= 1) {
+    return tracedPath;
+  }
+
+  std::vector<Node3D> startToGoal(tracedPath.rbegin(), tracedPath.rend());
+  std::vector<Node3D> denseStartToGoal;
+  denseStartToGoal.reserve(startToGoal.size() * 3);
+  denseStartToGoal.push_back(startToGoal.front());
+
+  const double sampleSpacingGrid =
+      kPrimitiveSampleSpacingMeters / grid.resolution;
+  for (std::size_t index = 1; index < startToGoal.size(); ++index) {
+    const Node3D& parent = startToGoal[index - 1];
+    const Node3D& child = startToGoal[index];
+    const int primitive = child.getPrim();
+    const bool usePrimitiveArc =
+        validPrimitive(primitive) &&
+        matchesPrimitiveEndpoint(parent, child, primitive);
+    const double segmentLength =
+        usePrimitiveArc ? primitiveLengthGrid(primitive)
+                        : poseDistanceGrid(parent, child);
+
+    if (segmentLength > sampleSpacingGrid) {
+      for (double distance = sampleSpacingGrid; distance < segmentLength;
+           distance += sampleSpacingGrid) {
+        if (usePrimitiveArc) {
+          denseStartToGoal.push_back(
+              samplePrimitive(parent, primitive, distance));
+        } else {
+          denseStartToGoal.push_back(interpolatePoseSegment(
+              parent,
+              child,
+              primitive,
+              distance / segmentLength));
+        }
+      }
+    }
+    denseStartToGoal.push_back(child);
+  }
+
+  return std::vector<Node3D>(
+      denseStartToGoal.rbegin(),
+      denseStartToGoal.rend());
 }
 
 std::vector<Pose2D> Planner::toPath(const std::vector<Node3D>& nodePath) const {
@@ -214,6 +422,7 @@ std::vector<Pose2D> Planner::toPath(const std::vector<Node3D>& nodePath) const {
         it->getX() * grid.resolution,
         it->getY() * grid.resolution,
         Helper::normalizeHeadingRad(it->getT()),
+        directionFromPrimitive(it->getPrim()),
     });
   }
   return path;

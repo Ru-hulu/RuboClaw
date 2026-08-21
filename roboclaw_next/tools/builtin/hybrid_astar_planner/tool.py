@@ -25,8 +25,14 @@ def register_hybrid_astar_planner_tool(
         title="Plan Hybrid Astar Path",
         description=(
             "Plan a collision-free Hybrid A* path on RoboClaw's fixed PNG map. "
-            "All positions use the map frame in meters and all yaw values use radians. "
-            "The latest planning result is also written to a JSON file for MPC."
+            "Input positions use the map frame in meters, and input yaw values "
+            "use radians. If the user's request does not explicitly provide a "
+            "start pose, first call get_mock_localization to read the robot's "
+            "current x, y, and yaw, then use that pose as the planner start. "
+            "Mock localization must be running for get_mock_localization. "
+            "The returned waypoints are dense geometric path "
+            "control points with x, y, and motion direction, not yaw. The latest "
+            "planning result is also written to a JSON file for MPC."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=False,

@@ -37,6 +37,8 @@ class Planner {
       const Pose2D& pose,
       const char* label,
       std::string& errorMessage) const;
+  std::vector<Node3D> densifyPrimitivePath(
+      const std::vector<Node3D>& tracedPath) const;
   std::vector<Pose2D> toPath(const std::vector<Node3D>& nodePath) const;
 
   Smoother smoother;

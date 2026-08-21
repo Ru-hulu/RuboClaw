@@ -10,7 +10,7 @@
 #include "planner.h"
 
 #ifndef HYBRID_ASTAR_DEFAULT_MAP_PATH
-#define HYBRID_ASTAR_DEFAULT_MAP_PATH "maps/map_demo.png"
+#define HYBRID_ASTAR_DEFAULT_MAP_PATH "maps/empty_80x80.png"
 #endif
 
 namespace {
@@ -94,6 +94,11 @@ std::string escapeJson(const std::string& value) {
   return escaped.str();
 }
 
+std::string directionToJson(HybridAStar::MotionDirection direction) {
+  return direction == HybridAStar::MotionDirection::Reverse ? "reverse"
+                                                            : "forward";
+}
+
 void writeResult(
     const HybridAStar::PlanResult& result,
     const std::string& mapPath) {
@@ -106,7 +111,8 @@ void writeResult(
     }
     const auto& waypoint = result.waypoints[index];
     std::cout << "{\"x\":" << waypoint.x << ",\"y\":" << waypoint.y
-              << ",\"yaw\":" << waypoint.yaw << '}';
+              << ",\"direction\":\"" << directionToJson(waypoint.direction)
+              << "\"}";
   }
   std::cout << "],\"waypoint_count\":" << result.waypoints.size()
             << ",\"map_path\":\"" << escapeJson(mapPath) << "\""

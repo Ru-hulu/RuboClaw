@@ -42,13 +42,20 @@ def register_path_tracking_tools(
         name="start_path_tracking",
         title="Start Path Tracking",
         description=(
-            "Start MPC path tracking. If reference_path_file is provided, MPC "
-            "loads that Hybrid A* JSON plan. If it is omitted and the latest "
-            "Hybrid A* plan JSON exists, MPC uses that file automatically. "
-            "Otherwise MPC falls back to its built-in reference path. "
-            "Mock localization must already be running. Call "
-            "get_mock_localization_status first; if it is not running, call "
-            "start_mock_localization before starting path tracking."
+            "Start only the MPC path tracking process. This tool does not start "
+            "localization and does not run Hybrid A* planning. Prerequisites: "
+            "mock localization must already be running, and a successful Hybrid "
+            "A* JSON path must be available. The path is made of x/y waypoints "
+            "and forward/reverse direction in the map frame; it is not a "
+            "time-parameterized trajectory. The MPC node internally converts "
+            "the path into a direction-preserving B-Spline reference pose "
+            "sequence sampled at the control period. If reference_path_file is "
+            "provided, MPC loads that Hybrid A* JSON path. If it is omitted and "
+            "the latest Hybrid A* path JSON exists, MPC uses that file "
+            "automatically. If neither is available, the call fails without "
+            "starting MPC. Before calling this tool, call "
+            "get_mock_localization_status; if localization is not running, "
+            "call start_mock_localization first."
         ),
         annotations=ToolAnnotations(
             readOnlyHint=False,
@@ -62,8 +69,9 @@ def register_path_tracking_tools(
             str | None,
             Field(
                 description=(
-                    "Optional Hybrid A* plan JSON file. Omit this to use the "
-                    "latest generated plan when it exists."
+                    "Optional Hybrid A* JSON path file containing x/y "
+                    "waypoints and forward/reverse direction. Omit this to "
+                    "use the latest generated path when it exists."
                 )
             ),
         ] = None,

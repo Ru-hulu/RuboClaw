@@ -8,6 +8,7 @@ import rclpy
 from geometry_msgs.msg import PoseStamped, Twist
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
+from roboclaw_interfaces.srv import GetMockLocalizationPose
 
 from robot_runtime.control.differential_drive_mpc import Pose2D, propagate
 from robot_runtime.debug.rviz_path import DebugPathPublisher
@@ -15,6 +16,7 @@ from robot_runtime.debug.rviz_path import DebugPathPublisher
 
 SIMULATION_DT = 0.1
 WHEEL_BASE = 0.45
+POSE_SERVICE_NAME = "/mock_localization/get_pose"
 
 
 class MockLocalizationNode(Node):
@@ -37,6 +39,11 @@ class MockLocalizationNode(Node):
             PoseStamped,
             "/robot_posture",
             10,
+        )
+        self.pose_service = self.create_service(
+            GetMockLocalizationPose,
+            POSE_SERVICE_NAME,
+            self.handle_get_pose,
         )
         self.debug_path_publisher = DebugPathPublisher(
             self,
@@ -73,6 +80,22 @@ class MockLocalizationNode(Node):
         posture_message = self.make_posture_message()
         self.posture_publisher.publish(posture_message)
         self.debug_path_publisher.append_pose(posture_message)
+
+    def handle_get_pose(
+        self,
+        request: GetMockLocalizationPose.Request,
+        response: GetMockLocalizationPose.Response,
+    ) -> GetMockLocalizationPose.Response:
+        """Return the latest internal pose through a small ROS service."""
+
+        del request
+        response.success = True
+        response.message = "Current mock localization pose."
+        response.frame_id = "map"
+        response.x = self.current_pose.x
+        response.y = self.current_pose.y
+        response.yaw = self.current_pose.yaw
+        return response
 
     def make_posture_message(self) -> PoseStamped:
         """Represent the planar pose as a standard stamped ROS pose."""

@@ -2,6 +2,7 @@
 #define SMOOTHER_H
 
 #include <cmath>
+#include <utility>
 #include <vector>
 
 #include "dynamicvoronoi.h"
@@ -24,9 +25,7 @@ class Smoother {
 
      During the different interations the following cost are being calculated
      obstacleCost
-     curvatureCost
      smoothnessCost
-     voronoiCost
   */
   void smoothPath(DynamicVoronoi& voronoi);
 
@@ -38,19 +37,16 @@ class Smoother {
   void tracePath(const Node3D* node, int i = 0, std::vector<Node3D> path = std::vector<Node3D>());
 
   /// returns the path of the smoother object
-  const std::vector<Node3D>& getPath() {return path;}
+  const std::vector<Node3D>& getPath() const {return path;}
+
+  /// replaces the path before running the smoother
+  void setPath(std::vector<Node3D> newPath) { path = std::move(newPath); }
 
   /// obstacleCost - pushes the path away from obstacles
   Vector2D obstacleTerm(Vector2D xi);
 
-  /// curvatureCost - forces a maximum curvature of 1/R along the path ensuring drivability
-  Vector2D curvatureTerm(Vector2D x_im2, Vector2D x_im1, Vector2D x_i, Vector2D x_ip1, Vector2D x_ip2);
-
   /// smoothnessCost - attempts to spread nodes equidistantly and with the same orientation
   Vector2D smoothnessTerm(Vector2D xim2, Vector2D xim1, Vector2D xi, Vector2D xip1, Vector2D xip2);
-
-  /// voronoiCost - trade off between path length and closeness to obstaclesg
-  //   Vector2D voronoiTerm(Vector2D xi);
 
   /// a boolean test, whether vector is on the grid or not
   bool isOnGrid(Vector2D vec) {
@@ -62,20 +58,12 @@ class Smoother {
   }
 
  private:
-  /// maximum possible curvature of the non-holonomic vehicle
-  float kappaMax = 1.f / (Constants::r * 1.1);
   /// maximum distance to obstacles that is penalized
   float obsDMax = Constants::minRoadWidth;
-  /// maximum distance for obstacles to influence the voronoi field
-  float vorObsDMax = Constants::minRoadWidth;
-  /// falloff rate for the voronoi field
+  /// gradient descent step size
   float alpha = 0.1;
   /// weight for the obstacle term
   float wObstacle = 0.2;
-  /// weight for the voronoi term
-  float wVoronoi = 0;
-  /// weight for the curvature term
-  float wCurvature = 0.1;
   /// weight for the smoothness term
   float wSmoothness = 0.2;
   /// voronoi diagram describing the topology of the map

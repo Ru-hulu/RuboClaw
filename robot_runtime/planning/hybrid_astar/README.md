@@ -26,7 +26,7 @@ result contains:
 
 - `success`: whether a collision-free path was found
 - `frame_id`: always `map`
-- `waypoints`: ordered `{x, y, yaw}` path points
+- `waypoints`: ordered `{x, y, direction}` dense path control points
 - `waypoint_count`: number of returned waypoints
 - `map_path`: PNG map used by the request
 - `planning_time_ms`: planner execution time
@@ -37,7 +37,7 @@ result contains:
 The tool always loads:
 
 ```text
-maps/map_demo.png
+maps/empty_80x80.png
 ```
 
 The map uses these conventions:
@@ -49,6 +49,18 @@ The map uses these conventions:
 
 The map path is intentionally absent from the MCP input schema. It remains an
 internal runtime configuration rather than an Agent decision.
+
+## Path Densification
+
+After Hybrid A* finds a solution, the original primitive chain is sampled before
+the smoother runs. The target primitive sample spacing is `0.3 m`; primitive
+segments shorter than that are kept as-is. The smoother then operates on this
+dense path.
+
+The final JSON omits `yaw` because smoothed points are intended as geometric
+control points for downstream B-spline processing. Each point keeps a
+`direction` value, either `forward` or `reverse`, so downstream controllers can
+preserve reversing segments.
 
 ## Build
 
@@ -74,7 +86,7 @@ robot_runtime/planning/hybrid_astar/build/hybrid_astar_plan
 robot_runtime/planning/hybrid_astar/build/hybrid_astar_plan \
   --start-x 5 --start-y 5 --start-yaw 0 \
   --goal-x 60 --goal-y 60 --goal-yaw 0 \
-  --map-path robot_runtime/planning/hybrid_astar/maps/map_demo.png
+  --map-path robot_runtime/planning/hybrid_astar/maps/empty_80x80.png
 ```
 
 The CLI writes exactly one JSON object to stdout. Diagnostic messages use

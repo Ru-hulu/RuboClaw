@@ -16,8 +16,14 @@ Agent 或第三方优化器；两个 ROS 节点通过 Topic 组成最小反馈�
 ## 输入
 
 - `current_pose`：机器人当前二维位姿 `x`、`y`、`yaw`。
-- `reference_poses`：从当前时刻开始的参考位姿序列。期望长度为
+- `reference_poses`：从当前时刻开始的参考 path 位姿序列。期望长度为
   `horizon + 1`，不足时自动使用最后一个位姿补齐。
+
+MPC 的外部输入按 path 处理，而不是要求外部直接提供带时间戳的 trajectory。
+Hybrid A* 输出的 JSON path 提供二维平面点 `x`、`y` 和 `direction`。
+`reference_path.py` 会按 `direction` 切段，避免 B-Spline 跨越换向 cusp，
+再把每一段转换为控制周期可用的 B-Spline reference pose 序列。
+当前 MPC 求解器消费的是 `x/y/yaw` 位姿序列。
 
 ## 输出
 
@@ -42,8 +48,9 @@ Agent 或第三方优化器；两个 ROS 节点通过 Topic 组成最小反馈�
 
 ## 最小 ROS 2 闭环
 
-`ros_node.py` 保留写死的参考路径，订阅 `/robot_posture`，并将 MPC 得到的左右轮
-速度转换为 `geometry_msgs/msg/Twist` 发布到 `/cmd_vel`。
+`ros_node.py` 可以读取 `reference_path_file` 参数指向的 Hybrid A* JSON path；
+未提供该参数时，节点会直接退出。节点订阅 `/robot_posture`，
+并将 MPC 得到的左右轮速度转换为 `geometry_msgs/msg/Twist` 发布到 `/cmd_vel`。
 
 `robot_runtime/localization/mock_localization/kinematic_node.py` 作为临时定位模块，
 订阅 `/cmd_vel`，使用
@@ -56,10 +63,11 @@ Agent 或第三方优化器；两个 ROS 节点通过 Topic 组成最小反馈�
 python3 -m robot_runtime.localization.mock_localization.kinematic_node
 ```
 
-再启动 MPC 节点：
+再启动 MPC 节点，并显式传入 Hybrid A* path 文件：
 
 ```bash
-python3 -m robot_runtime.control.differential_drive_mpc.ros_node
+python3 -m robot_runtime.control.differential_drive_mpc.ros_node \
+  --ros-args -p reference_path_file:=runtime_data/hybrid_astar/latest_hybrid_astar_path.json
 ```
 
 其他终端可以观察两个节点之间的消息：

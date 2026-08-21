@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -22,10 +22,8 @@ class HybridAStarWaypoint(BaseModel):
         allow_inf_nan=False,
         description="Waypoint y coordinate in meters.",
     )
-    yaw: float = Field(
-        strict=True,
-        allow_inf_nan=False,
-        description="Waypoint yaw in radians.",
+    direction: Literal["forward", "reverse"] = Field(
+        description="Motion direction through this path point.",
     )
 
 
