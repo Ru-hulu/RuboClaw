@@ -6,6 +6,12 @@
 `geometry_msgs/msg/PoseStamped` 发布 `/robot_posture`。MPC 只依赖这个 Topic，
 后续可以直接使用真实 SLAM 或定位节点替换本模块。
 
+默认初始位姿位于当前 80x80 调试地图中心：
+
+- `x = 40.0`
+- `y = 40.0`
+- `yaw = 0.0`
+
 节点同时提供一个轻量服务，用于直接读取节点内部的当前位姿：
 
 - `/mock_localization/get_pose`

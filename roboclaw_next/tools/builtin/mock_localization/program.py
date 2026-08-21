@@ -167,6 +167,7 @@ def _call_pose_service(timeout_sec: float) -> MockLocalizationPose:
     try:
         import rclpy
         from rclpy.context import Context
+        from rclpy.executors import SingleThreadedExecutor
         from rclpy.signals import SignalHandlerOptions
         from roboclaw_interfaces.srv import GetMockLocalizationPose
     except ImportError as exc:
@@ -183,11 +184,14 @@ def _call_pose_service(timeout_sec: float) -> MockLocalizationPose:
         signal_handler_options=SignalHandlerOptions.NO,
     )
     node = None
+    executor = None
     try:
         node = rclpy.create_node(
             "mock_localization_pose_client",
             context=context,
         )
+        executor = SingleThreadedExecutor(context=context)
+        executor.add_node(node)
         client = node.create_client(GetMockLocalizationPose, POSE_SERVICE_NAME)
         if not client.wait_for_service(timeout_sec=timeout_sec):
             raise TimeoutError
@@ -196,6 +200,7 @@ def _call_pose_service(timeout_sec: float) -> MockLocalizationPose:
         rclpy.spin_until_future_complete(
             node,
             future,
+            executor=executor,
             timeout_sec=timeout_sec,
         )
         if not future.done():
@@ -224,6 +229,10 @@ def _call_pose_service(timeout_sec: float) -> MockLocalizationPose:
             message=response.message,
         )
     finally:
+        if executor is not None:
+            if node is not None:
+                executor.remove_node(node)
+            executor.shutdown()
         if node is not None:
             node.destroy_node()
         if context.ok():

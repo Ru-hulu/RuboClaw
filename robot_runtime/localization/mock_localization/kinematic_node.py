@@ -25,7 +25,7 @@ class MockLocalizationNode(Node):
     def __init__(self) -> None:
         super().__init__("mock_localization")
 
-        self.current_pose = Pose2D(x=0.0, y=-0.20, yaw=0.0)
+        self.current_pose = Pose2D(x=40.0, y=40.0, yaw=0.0)
         self.linear_speed = 0.0
         self.angular_speed = 0.0
 
