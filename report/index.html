@@ -2,9 +2,8 @@
 <!--
   EDITING GUIDE / 编辑说明
   -----------------------
-  Single file: embedded CSS + small vanilla JS. Open directly, or serve for YouTube/Bilibili embeds:
+  Single file: embedded CSS + small vanilla JS. Open directly, or serve for the Bilibili embed:
       cd report && python -m http.server 8000      ->  http://localhost:8000
-  (YouTube may refuse to play inside a page opened from file:// — "Error 153". MP4/GIF demos work either way.)
 
   BILINGUAL: every text has a pair  <span class="zh">中文</span><span class="en">English</span>.
   CSS hides one of them based on <html data-lang="zh|en">. Default is zh; the top-right toggle switches.
@@ -14,8 +13,13 @@
     title / presenter / date, findings, landscape figure, project cards, demo clips,
     GitHub stars, links, table values, gap statements, architecture.
 
-  Adding a system: duplicate one <article class="project"> in #systems, change its id, add a cell to
-  .borrow, and add a column to both tables in #coverage.
+  SECTIONS (source order == render order):
+    #overview 01 · #landscape 02 (scatter + the 21-project summary table)
+    #coverage 03 (deep-dive demos + capability matrices) · #roboclaw 04 (bottleneck -> our project)
+    #harness  (hidden) architecture detail behind §04 · #refs 05
+
+  Adding a system: duplicate one <article class="project"> in #coverage, change its id, add a cell to
+  .borrow, add a column to both matrices in #coverage, and add a row to .compare in #landscape.
   Demo clips: <button data-kind="video|image|youtube|bilibili" data-src="..." data-caption-zh="..." data-caption-en="..." data-origin="...">
 
   Table cells: class yes ● documented & shown · partial ◐ partial/claimed · no ○ explicitly absent · unk ? not found
@@ -104,10 +108,9 @@
 
     /* ---------- sections ---------- */
     section { padding: 72px var(--pad-x); border-bottom: 1px solid var(--line); }
-    .section-head { display: grid; grid-template-columns: calc(var(--gutter) - 20px) 1fr; gap: 20px; align-items: baseline; margin-bottom: 36px; }
-    .section-no { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: .14em; }
-    .section-no .lbl { display: block; color: var(--muted); letter-spacing: .08em; font-weight: 600; text-transform: uppercase; font-size: 11.5px; margin-top: 2px; }
+    .section-head { margin: 0 0 36px var(--gutter); }
     .section-title h2 { font-size: 30px; margin-bottom: 8px; }
+    .section-title h2 .section-index { color: var(--accent); margin-right: .45em; }
     .section-title p { margin: 0; max-width: 760px; color: var(--muted); font-size: 16.5px; }
 
     .content { max-width: 920px; margin-left: var(--gutter); }
@@ -133,9 +136,13 @@
     th { background: #f8fafc; font-weight: 700; }
     tr:last-child td { border-bottom: 0; }
     th:last-child, td:last-child { border-right: 0; }
-    .glance { min-width: 820px; }
-    .glance td:first-child, .glance td:nth-child(4) { font-weight: 700; white-space: nowrap; }
-    .sm { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; }
+    .glance { min-width: 560px; table-layout: fixed; }
+    .glance col.c0 { width: 210px; }
+    .glance td:first-child { font-weight: 700; }
+    .glance td:first-child a { color: var(--text); }
+    .glance .idea { display: block; font-weight: 650; color: var(--text); }
+    .glance .take { display: block; margin-top: 3px; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+    .sm { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; line-height: 1.45; margin-top: 3px; }
 
     .matrix { min-width: 820px; font-size: 13.5px; table-layout: fixed; }
     .matrix col.c0 { width: 210px; }
@@ -151,6 +158,28 @@
     .no .m, .unk .m { color: var(--faint); }
     .unk { color: var(--faint) !important; font-style: italic; }
     .key-row { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 12.5px; color: var(--muted); margin: 0 0 20px; }
+
+    /* one-glance comparison table (landscape) */
+    .compare { min-width: 880px; }
+    .compare col.c0 { width: 300px; }
+    .compare col.c4 { width: 104px; }
+    .compare thead th { text-align: center; font-size: 12.5px; line-height: 1.35; }
+    .compare thead th:first-child { text-align: left; }
+    .compare thead th.gapcol, .compare tfoot td.gapcol { background: var(--accent-soft); color: var(--accent); }
+    .compare td:not(:first-child) { text-align: center; vertical-align: middle; }
+    .compare td:first-child { font-weight: 650; }
+    .compare td:first-child a { color: var(--text); }
+    .compare .m { width: auto; font-size: 18px; line-height: 1; }
+    .compare .code { font-size: 12.5px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+    .compare .code.unk { font-weight: 400; }
+    .compare tr.group th { font-size: 12px; padding: 9px 14px; color: var(--accent); letter-spacing: .06em; text-transform: none; font-weight: 750; }
+    .compare tr.group th em { font-style: normal; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 10px; }
+    .compare tr.hl td:first-child { font-weight: 750; }
+    .compare tfoot td { background: #f8fafc; border-top: 2px solid var(--line); border-bottom: 0;
+      font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+    .compare tfoot td:first-child { background: #f8fafc; font-weight: 700; color: var(--text-2); text-align: left; }
+    .compare tfoot b { color: var(--text-2); font-weight: 700; }
+    .compare tfoot b.zero { color: #b42318; }
 
     /* ---------- figure ---------- */
     .figure { margin: 0; border: 1px solid var(--line); background: #fbfcfd; padding: 20px 20px 14px; }
@@ -203,26 +232,6 @@
     .demo-note { font-size: 12.5px; color: var(--muted); padding: 0 14px 10px; margin: 0; }
 
     /* ---------- complete project landscape ---------- */
-    .catalog { min-width: 920px; font-size: 13.5px; }
-    .catalog td:first-child { width: 220px; color: var(--text); font-weight: 700; }
-    .catalog th:nth-child(2), .catalog th:nth-child(3),
-    .catalog td:nth-child(2), .catalog td:nth-child(3) { width: 120px; text-align: center; }
-    .catalog td:nth-child(2), .catalog td:nth-child(3) { color: var(--accent); font-size: 16px; font-weight: 700; }
-    .catalog .focus { background: var(--accent-soft); }
-    .catalog-key { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; margin: 10px 0 30px; }
-    .catalog-key i { width: 18px; height: 10px; background: var(--accent-soft); border: 1px solid #d8e5f0; }
-    .route-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 12px; }
-    .route-card { border: 1px solid var(--line); background: #fff; min-width: 0; }
-    .route-card-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; padding: 18px 20px 14px; border-bottom: 1px solid var(--line-soft); }
-    .route-card-head h3 { margin: 0 0 4px; font-size: 18px; }
-    .route-card-head p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
-    .route-count { flex: none; min-width: 34px; height: 26px; padding: 0 8px; border-radius: 13px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 750; }
-    .route-list { list-style: none; padding: 0; margin: 0; }
-    .route-list li { display: grid; grid-template-columns: minmax(125px, .75fr) minmax(0, 1.5fr); gap: 12px; padding: 10px 20px; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
-    .route-list li:last-child { border-bottom: 0; }
-    .route-list b { color: var(--text); }
-    .route-list span { color: var(--text-2); }
-    .route-list li.focus { box-shadow: inset 3px 0 var(--accent); background: var(--accent-soft); }
     .route-note { display: flex; gap: 9px; align-items: flex-start; color: var(--muted); font-size: 12.5px; margin: 10px 0 30px; }
     .route-note i { flex: none; width: 18px; height: 10px; margin-top: 4px; background: var(--accent-soft); border-left: 3px solid var(--accent); }
     .terms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 0 0 28px; }
@@ -310,8 +319,6 @@
 
     @media (max-width: 1000px) {
       :root { --pad-x: 40px; --gutter: 0px; }
-      .section-head { grid-template-columns: 1fr; gap: 6px; }
-      .section-no .lbl { display: inline; margin-left: 8px; }
       .project-grid { grid-template-columns: 1fr; }
       .borrow { grid-template-columns: repeat(2, 1fr); }
       .direction-grid { grid-template-columns: repeat(2, 1fr); }
@@ -319,8 +326,7 @@
     @media (max-width: 760px) {
       :root { --pad-x: 20px; }
       .brand { display: none; }
-      .summary-grid, .gap-box, .branch, .reqs, .borrow, .terms, .direction-grid, .route-groups { grid-template-columns: 1fr; }
-      .route-list li { grid-template-columns: 1fr; gap: 2px; }
+      .summary-grid, .gap-box, .branch, .reqs, .borrow, .terms, .direction-grid { grid-template-columns: 1fr; }
       .project-head { flex-direction: column; align-items: flex-start; }
       .chips { justify-content: flex-start; }
       .today li { grid-template-columns: 1fr; gap: 0; }
@@ -338,9 +344,8 @@
       <nav class="topnav" aria-label="Sections">
         <a href="#overview"><span class="zh">核心结论</span><span class="en">Key findings</span></a>
         <a href="#landscape">Landscape</a>
-        <a href="#systems"><span class="zh">项目全景</span><span class="en">Project landscape</span></a>
         <a href="#coverage"><span class="zh">Demo 对比</span><span class="en">Demo comparison</span></a>
-        <a href="#gap"><span class="zh">关键缺口</span><span class="en">Open gaps</span></a>
+        <a href="#roboclaw"><span class="zh">项目全景</span><span class="en">Project landscape</span></a>
         <a href="#refs"><span class="zh">资料来源</span><span class="en">Sources</span></a>
       </nav>
       <div class="lang" role="group" aria-label="Language">
@@ -376,9 +381,8 @@
     <!-- ================================================================ 01 OVERVIEW -->
     <section id="overview">
       <div class="section-head">
-        <div class="section-no">01<span class="lbl"><span class="zh">概览</span><span class="en">Overview</span></span></div>
         <div class="section-title">
-          <h2>Overview</h2>
+          <h2><span class="zh"><span class="section-index">01</span>概览</span><span class="en"><span class="section-index">01</span>Overview</span></h2>
         </div>
       </div>
 
@@ -408,74 +412,65 @@
         </div>
 
 
-        <!-- EDIT: stars from api.github.com, 11 Sep 2026 -->
+        <!-- EDIT: one row per deep-dive sample. Stars from api.github.com, 11 Sep 2026.
+             Keep the "what to borrow" column in sync with the .borrow nav in §03. -->
         <div class="table-wrap">
           <table class="glance">
+            <colgroup><col class="c0"><col></colgroup>
             <thead>
               <tr>
                 <th><span class="zh">系统</span><span class="en">System</span></th>
-                <th><span class="zh">团队 · 发布</span><span class="en">Group · release</span></th>
-                <th><span class="zh">核心思路</span><span class="en">Core idea</span></th>
-                <th>GitHub Stars</th>
-                <th><span class="zh">Demo 中的机器人</span><span class="en">Robots in demos</span></th>
+                <th><span class="zh">核心思路 · 最值得借鉴的一点</span><span class="en">Core idea · the one thing to borrow</span></th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><a href="#p-holoagent">HoloAgent-0</a></td>
-                <td><span class="zh">地平线</span><span class="en">Horizon Robotics</span><span class="sm">2026.06</span></td>
-                <td><span class="zh">Skill graph + 3D 空间记忆</span><span class="en">Skill graph + 3D spatial memory</span></td>
-                <td>★ 371</td>
-                <td><span class="zh">Unitree G1、R1 人形、轮式双臂</span><span class="en">Unitree G1, R1 humanoid, wheeled dual-arm</span></td>
+                <td><a href="#p-dimos">DimOS</a>
+                  <span class="sm"><span class="zh">Dimensional · 开源持续活跃 · ★4.5k</span><span class="en">Dimensional · open source, active · ★4.5k</span></span></td>
+                <td><span class="idea"><span class="zh">传感器流 + MCP skill + 空间记忆</span><span class="en">Sensor streams + MCP skills + spatial memory</span></span>
+                  <span class="take"><span class="zh">借鉴：每条观测都带时间戳、坐标系和位姿，后续一切检索都靠它</span><span class="en">Borrow: Stamp every observation with time, frame and pose; all later retrieval rests on it</span></span></td>
               </tr>
               <tr>
-                <td><a href="#p-roboos">RoboOS</a></td>
-                <td><span class="zh">智源研究院</span><span class="en">BAAI</span><span class="sm">2025.05 · v2.0 2025.07</span></td>
-                <td><span class="zh">大脑–小脑式多机调度</span><span class="en">Brain–cerebellum multi-robot scheduling</span></td>
-                <td>★ 621</td>
-                <td><span class="zh">睿尔曼单臂、松灵双臂</span><span class="en">Realman single-arm, AgileX dual-arm</span></td>
+                <td><a href="https://github.com/OpenMind/OM1" target="_blank" rel="noopener">OpenMind OM1</a>
+                  <span class="sm"><span class="zh">OpenMind · 开源持续活跃 · ★2.9k</span><span class="en">OpenMind · open source, active · ★2.9k</span></span></td>
+                <td><span class="idea"><span class="zh">跨机器人 HAL + Agent Runtime</span><span class="en">Cross-robot HAL + agent runtime</span></span>
+                  <span class="take"><span class="zh">借鉴：一套硬件抽象层接多种机型，Agent 侧不感知厂商差异</span><span class="en">Borrow: One hardware abstraction layer across robot types, so the agent never sees vendor differences</span></span></td>
               </tr>
               <tr>
-                <td><a href="#p-thea">Thea</a></td>
-                <td><span class="zh">宁波东方理工</span><span class="en">EIT Ningbo</span><span class="sm">2026.08</span></td>
-                <td><span class="zh">VLA 即工具 + 动作评估器</span><span class="en">VLAs as tools + action evaluator</span></td>
-                <td>★ 109</td>
-                <td><span class="zh">Astribot S1、松灵 Cobot Magic、Unitree G1</span><span class="en">Astribot S1, AgileX Cobot Magic, Unitree G1</span></td>
+                <td><a href="#p-roboos">RoboOS</a>
+                  <span class="sm"><span class="zh">智源研究院 · 2025.05（v2.0 2025.07）· ★621</span><span class="en">BAAI · May 2025 (v2.0 Jul 2025) · ★621</span></span></td>
+                <td><span class="idea"><span class="zh">大脑–小脑式多机调度</span><span class="en">Brain–cerebellum multi-robot scheduling</span></span>
+                  <span class="take"><span class="zh">借鉴：调度与技能彻底分开：换机器人不用改调度</span><span class="en">Borrow: Keep scheduling separate from skills, so swapping robots does not touch the scheduler</span></span></td>
               </tr>
               <tr>
-                <td><a href="#p-dimos">DimOS</a></td>
-                <td>Dimensional<span class="sm"><span class="zh">开源，持续活跃</span><span class="en">open source, active</span></span></td>
-                <td><span class="zh">传感器流 + MCP skill + 空间记忆</span><span class="en">Sensor streams + MCP skills + spatial memory</span></td>
-                <td>★ 4.5k</td>
-                <td><span class="zh">Unitree Go2；G1 与机械臂为 beta</span><span class="en">Unitree Go2; G1 and arms in beta</span></td>
+                <td><a href="#p-holoagent">HoloAgent-0</a>
+                  <span class="sm"><span class="zh">地平线 · 2026.06 · ★371</span><span class="en">Horizon Robotics · Jun 2026 · ★371</span></span></td>
+                <td><span class="idea"><span class="zh">Skill graph + 3D 空间记忆</span><span class="en">Skill graph + 3D spatial memory</span></span>
+                  <span class="take"><span class="zh">借鉴：把每个规划步骤做成带前后置条件、带恢复边的类型化 skill</span><span class="en">Borrow: Make every plan step a typed skill with pre/post-conditions and recovery edges</span></span></td>
               </tr>
               <tr>
-                <td><a href="https://github.com/OpenMind/OM1" target="_blank" rel="noopener">OpenMind OM1</a></td>
-                <td>OpenMind<span class="sm"><span class="zh">开源，持续活跃</span><span class="en">open source, active</span></span></td>
-                <td><span class="zh">跨机器人 HAL + Agent Runtime</span><span class="en">Cross-robot HAL + agent runtime</span></td>
-                <td>★ 2.9k</td>
-                <td><span class="zh">Unitree Go2 / G1；Gazebo 与 Isaac 仿真</span><span class="en">Unitree Go2 / G1; Gazebo and Isaac simulation</span></td>
+                <td><a href="#p-thea">Thea</a>
+                  <span class="sm"><span class="zh">宁波东方理工 · 2026.08 · ★109</span><span class="en">EIT Ningbo · Aug 2026 · ★109</span></span></td>
+                <td><span class="idea"><span class="zh">VLA 即工具 + 动作评估器</span><span class="en">VLAs as tools + action evaluator</span></span>
+                  <span class="take"><span class="zh">借鉴：动作完成由评估器给证据，像退出码一样返回给 Agent</span><span class="en">Borrow: Let an evaluator supply the evidence of completion and return it like an exit code</span></span></td>
               </tr>
               <tr>
-                <td><a href="#p-hivla">Hi-VLA Design Study</a></td>
-                <td>Google DeepMind<span class="sm">2026.06</span></td>
-                <td><span class="zh">VLM 规划器 + VLA 控制器消融</span><span class="en">VLM planner + VLA controller ablations</span></td>
-                <td>—</td>
-                <td>ALOHA</td>
+                <td><a href="#p-hivla">Hi-VLA Design Study</a>
+                  <span class="sm"><span class="zh">Google DeepMind · 2026.06 · 无公开代码</span><span class="en">Google DeepMind · Jun 2026 · no public code</span></span></td>
+                <td><span class="idea"><span class="zh">VLM 规划器 + VLA 控制器消融</span><span class="en">VLM planner + VLA controller ablations</span></span>
+                  <span class="take"><span class="zh">借鉴：用成功检测决定 VLA 何时停，而不是让它跑满时长</span><span class="en">Borrow: End a VLA call on success detection instead of letting it run out the clock</span></span></td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="caption"><span class="zh">OpenMind OM1 侧重跨机器人 HAL 与 Runtime，符合本次调研范围并列入高关联项目，但当前未列入 5 个深拆。</span><span class="en">OpenMind OM1 focuses on a cross-robot HAL and runtime. It is included as a highly relevant project but is not among the five current deep dives.</span></p>
       </div>
     </section>
 
     <!-- ================================================================ 02 LANDSCAPE -->
     <section id="landscape">
       <div class="section-head">
-        <div class="section-no">02<span class="lbl">Landscape</span></div>
         <div class="section-title">
-          <h2>Landscape</h2>
+          <h2><span class="section-index">02</span>Landscape</h2>
           <p><span class="zh">横轴表示动作主要由确定性 ROS 技能还是学习型 VLA 策略执行；纵轴表示运行时维护世界状态、记忆、验证与恢复的深度。多数项目强化其中一侧，同时兼顾两类后端和完整闭环的工作仍较少。</span>
             <span class="en">The horizontal axis shows whether actions are executed mainly by deterministic ROS skills or learned VLA policies. The vertical axis shows how deeply the runtime maintains world state, memory, verification and recovery. Most projects strengthen one side; few combine both backends with a full closed loop.</span></p>
         </div>
@@ -524,8 +519,8 @@
             <ellipse cx="600" cy="66" rx="132" ry="28" fill="#eef3f8" stroke="#1f4e79" stroke-width="1.2" stroke-dasharray="5 4"/>
             <text class="zh" x="600" y="62" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1f4e79">少量探索：显式 ROS ↔ VLA 路由</text>
             <text class="en" x="600" y="62" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1f4e79">Emerging: explicit ROS ↔ VLA routing</text>
-            <text class="zh" x="600" y="78" text-anchor="middle" font-size="11.5" fill="#1f4e79">在线选择 + 执行后验证（§05）</text>
-            <text class="en" x="600" y="78" text-anchor="middle" font-size="11.5" fill="#1f4e79">online choice + post-action verification (§05)</text>
+            <text class="zh" x="600" y="78" text-anchor="middle" font-size="11.5" fill="#1f4e79">在线选择 + 执行后验证（§04）</text>
+            <text class="en" x="600" y="78" text-anchor="middle" font-size="11.5" fill="#1f4e79">online choice + post-action verification (§04)</text>
 
             <!-- context systems -->
             <g font-size="13" fill="#475467">
@@ -582,87 +577,189 @@
         </figure>
         <p class="caption"><span class="zh">图 1. 基于论文、README 与项目主页（2026-09-11）的定性定位，并非测量值。</span>
           <span class="en">Figure 1. Qualitative positions from papers, READMEs and project pages (11 Sep 2026), not measurements.</span></p>
-      </div>
-    </section>
 
-    <!-- ================================================================ 03 SYSTEMS -->
-    <section id="systems">
-      <div class="section-head">
-        <div class="section-no">03<span class="lbl"><span class="zh">项目全景</span><span class="en">Project landscape</span></span></div>
-        <div class="section-title">
-          <h2><span class="zh">RoboClaw：从机器人 API 走向可恢复的 Agent Runtime</span><span class="en">RoboClaw: from robot APIs to a recoverable agent runtime</span></h2>
-          <p><span class="zh">目标不是再做一个聊天式控制入口，而是让机器人在长程任务中持续理解世界、选择执行方式、验证结果，并从经验中变得更可靠。</span>
-            <span class="en">The goal is not another chat control surface, but a runtime that understands the world, selects execution backends, verifies outcomes and becomes more reliable through experience.</span></p>
-        </div>
-      </div>
-
-      <div class="content wide">
-        <div class="roboclaw-vision">
-          <p class="reading"><b><span class="zh">总体方向：</span><span class="en">General direction:</span></b><span class="zh">以统一世界状态为基础，把 Agent 决策、Skill Graph、ROS/VLA 混合执行、验证恢复和经验演化串成一个闭环。</span><span class="en">build one closed loop over a unified world state: agent decisions, skill graphs, hybrid ROS/VLA execution, verification and recovery, then experience-driven evolution.</span></p>
-          <div class="direction-grid">
-            <article class="direction"><div class="n">01</div><h3><span class="zh">理解世界</span><span class="en">Understand</span></h3><p><span class="zh">时间记忆、3D 空间记忆、对象与机器人状态形成统一 World State。</span><span class="en">Temporal memory, 3D spatial memory, objects and robot state form one world state.</span></p></article>
-            <article class="direction"><div class="n">02</div><h3><span class="zh">组织任务</span><span class="en">Organize</span></h3><p><span class="zh">Context Builder 控制上下文；Skill Graph 表达依赖、分支、并行和资源约束。</span><span class="en">A context builder manages attention while skill graphs express dependencies, branches, parallelism and resources.</span></p></article>
-            <article class="direction"><div class="n">03</div><h3><span class="zh">选择执行</span><span class="en">Choose</span></h3><p><span class="zh">根据几何、接触、风险和历史表现，在确定性 ROS 技能与 VLA 策略之间路由。</span><span class="en">Route between deterministic ROS skills and VLA policies from geometry, contact, risk and prior performance.</span></p></article>
-            <article class="direction"><div class="n">04</div><h3><span class="zh">验证与恢复</span><span class="en">Verify</span></h3><p><span class="zh">动作完成由证据判断；失败后重试、重观察、重规划、切换后端或请求协助。</span><span class="en">Evidence decides completion; failures trigger retry, re-observation, replanning, backend switching or assistance.</span></p></article>
-            <article class="direction"><div class="n">05</div><h3><span class="zh">积累与演化</span><span class="en">Evolve</span></h3><p><span class="zh">从执行记录提取 Skill Experience，生成候选技能，经评测后再替换旧版本。</span><span class="en">Extract skill experience from traces, propose candidates and promote them only after evaluation.</span></p></article>
-          </div>
-          <div class="vision-loop"><span class="zh">Observe → Build Context → Plan → Route → Execute → Verify → Recover → Learn</span><span class="en">Observe → Build Context → Plan → Route → Execute → Verify → Recover → Learn</span></div>
-        </div>
         <div class="terms" aria-label="Terminology">
           <div class="term"><b><span class="zh">决策层 · LLM 判断工具</span><span class="en">Decision layer · LLM tool selection</span></b><span class="zh">理解指令、规划，并根据当前状态选择工具和处理反馈。</span><span class="en">Interprets instructions, plans, selects tools from the current state and handles feedback.</span></div>
           <div class="term"><b><span class="zh">工程层 · 上下文/记忆管理 + 3D map 更新</span><span class="en">Engineering layer · context/memory + 3D map updates</span></b><span class="zh">同时承载工具注册、执行监控、验证、安全与恢复。</span><span class="en">Also hosts tool registration, execution monitoring, verification, safety and recovery.</span></div>
           <div class="term"><b><span class="zh">执行层 · ROS / VLA </span><span class="en">ROS / VLA · execution backends</span></b><span class="zh">ROS 技能偏确定性控制；VLA 偏学习型策略。</span><span class="en">ROS skills provide deterministic control; VLAs provide learned policies. Neither is synonymous with the agent or harness.</span></div>
         </div>
+        <!-- EDIT: 21-project summary table, hidden for now. Remove `hidden` to show it again. -->
+        <div class="project-catalog" hidden>
         <p class="reading"><b><span class="zh">共同前提：</span><span class="en">Shared premise:</span></b><span class="zh">这些项目都让 LLM 参与理解、规划或工具选择。以下按照每个项目最突出的特征分类。</span><span class="en">All of these projects use an LLM for interpretation, planning or tool selection. They are grouped below by each project's most prominent characteristic.</span></p>
-        <div class="sub-head" style="margin-top:0"><span class="zh">21 个项目，按最突出特征分组</span><span class="en">21 projects, grouped by their defining characteristics</span></div>
-        <div class="route-groups">
-          <article class="route-card">
-            <div class="route-card-head"><div><h3><span class="zh">LLM → ROS 经典控制</span><span class="en">LLM → ROS / classical control</span></h3><p><span class="zh">工具最终由确定性技能、规划器或控制器执行</span><span class="en">Tools terminate in deterministic skills, planners or controllers</span></p></div><span class="route-count">7</span></div>
-            <ul class="route-list">
-              <li><b>NASA JPL ROSA</b><span class="zh">检查、诊断和操作 ROS 1/2</span><span class="en">Inspect, diagnose and operate ROS 1/2</span></li>
-              <li><b>ROS MCP Server</b><span class="zh">动态发现 ROS 接口</span><span class="en">Dynamic ROS interface discovery</span></li>
-              <li><b>robot_MCP</b><span class="zh">SO-ARM100/101 的最简工具接口</span><span class="en">Minimal tools for SO-ARM100/101</span></li>
-              <li><b>RAI</b><span class="zh">ROS 2 工具、视觉与任务执行</span><span class="en">ROS 2 tools, vision and task execution</span></li>
-              <li><b>Stretch AI</b><span class="zh">建图、导航、抓取与交互全链路</span><span class="en">Mapping, navigation, grasping and interaction</span></li>
-              <li><b>Automatika EMOS</b><span class="zh">ROS 2 原生 Runtime 与生命周期</span><span class="en">ROS 2-native runtime and lifecycle</span></li>
-              <li><b>HomeRobot</b><span class="zh">导航与操作的底层抽象；背景参照</span><span class="en">Navigation and manipulation abstractions; reference</span></li>
-            </ul>
-          </article>
-
-          <article class="route-card">
-            <div class="route-card-head"><div><h3><span class="zh">LLM / VLM → VLA</span><span class="en">LLM / VLM → VLA</span></h3><p><span class="zh">高层模型拆任务，学习型策略完成动作</span><span class="en">A high-level model decomposes tasks; learned policies act</span></p></div><span class="route-count">5</span></div>
-            <ul class="route-list">
-              <li class="focus"><b>Thea</b><span class="zh">VLA 即工具；评估器 + 工具经验</span><span class="en">VLA as tools; evaluator + tool experience</span></li>
-              <li><b>Mbodi embodied-agents</b><span class="zh">Language / Sensory / Motion Agent 分层</span><span class="en">Language / sensory / motion-agent hierarchy</span></li>
-              <li><b>VLAPilot</b><span class="zh">有界 VLA 执行、验证与调试</span><span class="en">Bounded VLA execution, verification and debugging</span></li>
-              <li class="focus"><b>Hi-VLA</b><span class="zh">分层编排与成功检测终止</span><span class="en">Hierarchical orchestration and success termination</span></li>
-              <li><b>HiVLA（港大等）</b><span class="zh">视觉定位后交给 DiT 动作专家</span><span class="en">Visual grounding followed by a DiT action expert</span></li>
-            </ul>
-          </article>
-
-          <article class="route-card">
-            <div class="route-card-head"><div><h3><span class="zh">LLM → ROS 经典控制 + VLA</span><span class="en">LLM → classical control + VLA</span></h3><p><span class="zh">两类后端共存；是否动态路由仍需逐项目判断</span><span class="en">Both backends coexist; dynamic routing varies by project</span></p></div><span class="route-count">5</span></div>
-            <ul class="route-list">
-              <li class="focus"><b>HoloAgent-0</b><span class="zh">ROS 2 为主；学习模型按 Skill 固定绑定</span><span class="en">ROS 2-led; learned models fixed to skills</span></li>
-              <li><b>RPent / Harness-VLA</b><span class="zh">解析式 primitive + 冻结 VLA</span><span class="en">Analytic primitives + frozen VLAs</span></li>
-              <li><b>OpenRAL</b><span class="zh">Nav2、MoveIt、ros2_control 与 VLA 统一为 rSkill</span><span class="en">Nav2, MoveIt, ros2_control and VLAs as rSkills</span></li>
-              <li><b>RoboNeuron</b><span class="zh">ROS、运动学控制与 VLA 共存</span><span class="en">ROS, kinematic control and VLA in one runtime</span></li>
-              <li><b>Cyclo Intelligence</b><span class="zh">真机长程流程交替使用两类控制</span><span class="en">Alternates both control types in long real-robot tasks</span></li>
-            </ul>
-          </article>
-
-          <article class="route-card">
-            <div class="route-card-head"><div><h3><span class="zh">平台层 / 后端尚不明确</span><span class="en">Platform layer / backend unclear</span></h3><p><span class="zh">价值主要在 Runtime、调度或技能演化，公开资料不足以归入前三类</span><span class="en">Value lies in runtime, scheduling or skill evolution; public evidence is insufficient for the groups above</span></p></div><span class="route-count">4</span></div>
-            <ul class="route-list">
-              <li class="focus"><b>DimOS</b><span class="zh">ROS 可选；空间流、记忆与 MCP Skill</span><span class="en">Optional ROS; spatial streams, memory and MCP skills</span></li>
-              <li class="focus"><b>RoboOS</b><span class="zh">共享状态与多机 Brain → Skill 调度</span><span class="en">Shared state and multi-robot Brain → Skill scheduling</span></li>
-              <li><b><a href="https://github.com/OpenMind/OM1" target="_blank" rel="noopener">OpenMind OM1</a></b><span class="zh">跨机器人 HAL、Runtime 与插件</span><span class="en">Cross-robot HAL, runtime and plugins</span></li>
-              <li><b>CaP-X</b><span class="zh">Skill 合成、反馈与技能库演化</span><span class="en">Skill synthesis, feedback and library evolution</span></li>
-            </ul>
-          </article>
+        <div class="sub-head" style="margin-top:0"><span class="zh">21 个项目 · 一张总表</span><span class="en">21 projects · one summary table</span></div>
+        <div class="key-row">
+          <span class="yes"><span class="m">●</span><span class="zh">有文档且明确具备</span><span class="en">documented and explicit</span></span>
+          <span class="partial"><span class="m">◐</span><span class="zh">部分具备，或固定 / 隐式</span><span class="en">partial, or fixed / implicit</span></span>
+          <span class="no"><span class="m">○</span><span class="zh">明确不涉及</span><span class="en">explicitly not addressed</span></span>
+          <span class="unk"><span class="m">?</span><span class="zh">本次调研未核实</span><span class="en">not verified in this survey</span></span>
         </div>
-        <div class="route-note"><i></i><span><span class="zh">浅蓝色项目会在 Demo 对比中进一步拆解。这里的“经典控制 + VLA”只表示两类后端共存，不等于已经实现可靠的动态路由。</span><span class="en">Blue projects receive deeper treatment in the demo comparison. “Classical control + VLA” means both backends coexist; it does not imply reliable dynamic routing.</span></span></div>
+        <!-- EDIT: one row per project. Symbols follow the key above: ● documented, ◐ partial/fixed,
+             ○ explicitly not addressed, ? not verified in this survey. Keep the tfoot counts in sync. -->
+        <div class="table-wrap">
+          <table class="matrix compare">
+            <colgroup><col class="c0"><col><col><col><col class="c4"></colgroup>
+            <thead>
+              <tr>
+                <th><span class="zh">项目 · 共 21 个</span><span class="en">Project · 21 in total</span></th>
+                <th><span class="zh">世界状态 / 记忆</span><span class="en">World state / memory</span></th>
+                <th><span class="zh">执行验证 / 恢复</span><span class="en">Verification / recovery</span></th>
+                <th class="gapcol"><span class="zh">ROS ↔ VLA 动态路由</span><span class="en">ROS ↔ VLA dynamic routing</span></th>
+                <th><span class="zh">代码</span><span class="en">Code</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="5">
+                <span class="zh">A · LLM → ROS 经典控制<em>7 个 · 工具最终由确定性技能、规划器或控制器执行</em></span>
+                <span class="en">A · LLM → ROS / classical control<em>7 · tools terminate in deterministic skills, planners or controllers</em></span></th></tr>
+              <tr>
+                <td>NASA JPL ROSA<span class="sm"><span class="zh">检查、诊断和操作 ROS 1/2</span><span class="en">Inspect, diagnose and operate ROS 1/2</span></span></td>
+                <td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code">★ 1.6k</td>
+              </tr>
+              <tr>
+                <td>ROS MCP Server<span class="sm"><span class="zh">动态发现 ROS 接口</span><span class="en">Dynamic ROS interface discovery</span></span></td>
+                <td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">公开</span><span class="en">public</span></td>
+              </tr>
+              <tr>
+                <td>robot_MCP<span class="sm"><span class="zh">SO-ARM100/101 的最简工具接口</span><span class="en">Minimal tools for SO-ARM100/101</span></span></td>
+                <td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">公开</span><span class="en">public</span></td>
+              </tr>
+              <tr>
+                <td>RAI<span class="sm"><span class="zh">ROS 2 工具、视觉与任务执行</span><span class="en">ROS 2 tools, vision and task execution</span></span></td>
+                <td class="partial"><span class="m">◐</span></td><td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code">★ 588</td>
+              </tr>
+              <tr>
+                <td>Stretch AI<span class="sm"><span class="zh">建图、导航、抓取与交互全链路</span><span class="en">Mapping, navigation, grasping and interaction</span></span></td>
+                <td class="partial"><span class="m">◐</span></td><td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">公开</span><span class="en">public</span></td>
+              </tr>
+              <tr>
+                <td>Automatika EMOS<span class="sm"><span class="zh">ROS 2 原生 Runtime 与生命周期</span><span class="en">ROS 2-native runtime and lifecycle</span></span></td>
+                <td class="partial"><span class="m">◐</span></td><td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">公开</span><span class="en">public</span></td>
+              </tr>
+              <tr>
+                <td>HomeRobot<span class="sm"><span class="zh">导航与操作的底层抽象；背景参照</span><span class="en">Navigation and manipulation abstractions; reference</span></span></td>
+                <td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">公开</span><span class="en">public</span></td>
+              </tr>
 
+              <tr class="group"><th colspan="5">
+                <span class="zh">B · LLM / VLM → VLA<em>5 个 · 高层模型拆任务，学习型策略完成动作</em></span>
+                <span class="en">B · LLM / VLM → VLA<em>5 · a high-level model decomposes tasks; learned policies act</em></span></th></tr>
+              <tr class="hl">
+                <td><a href="#p-thea">Thea</a><span class="sm"><span class="zh">VLA 即工具；评估器 + 工具经验</span><span class="en">VLAs as tools; evaluator + tool experience</span></span></td>
+                <td class="yes"><span class="m">●</span></td><td class="yes"><span class="m">●</span></td><td class="partial"><span class="m">◐</span></td>
+                <td class="code">★ 109</td>
+              </tr>
+              <tr>
+                <td>Mbodi embodied-agents<span class="sm"><span class="zh">Language / Sensory / Motion Agent 分层</span><span class="en">Language / sensory / motion-agent hierarchy</span></span></td>
+                <td class="unk"><span class="m">?</span></td><td class="unk"><span class="m">?</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">公开</span><span class="en">public</span></td>
+              </tr>
+              <tr>
+                <td>VLAPilot<span class="sm"><span class="zh">有界 VLA 执行、验证与调试</span><span class="en">Bounded VLA execution, verification and debugging</span></span></td>
+                <td class="unk"><span class="m">?</span></td><td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code unk"><span class="zh">未核实</span><span class="en">not verified</span></td>
+              </tr>
+              <tr class="hl">
+                <td><a href="#p-hivla">Hi-VLA Design Study</a><span class="sm"><span class="zh">分层编排与成功检测终止</span><span class="en">Hierarchical orchestration and success termination</span></span></td>
+                <td class="no"><span class="m">○</span></td><td class="yes"><span class="m">●</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code"><span class="zh">无</span><span class="en">none</span></td>
+              </tr>
+              <tr>
+                <td><span class="zh">HiVLA（港大等）</span><span class="en">HiVLA (HKU et al.)</span><span class="sm"><span class="zh">视觉定位后交给 DiT 动作专家</span><span class="en">Visual grounding followed by a DiT action expert</span></span></td>
+                <td class="no"><span class="m">○</span></td><td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code unk"><span class="zh">待发布</span><span class="en">forthcoming</span></td>
+              </tr>
+
+              <tr class="group"><th colspan="5">
+                <span class="zh">C · LLM → ROS 经典控制 + VLA<em>5 个 · 两类后端共存，是否动态路由仍需逐项目判断</em></span>
+                <span class="en">C · LLM → classical control + VLA<em>5 · both backends coexist; dynamic routing varies by project</em></span></th></tr>
+              <tr class="hl">
+                <td><a href="#p-holoagent">HoloAgent-0</a><span class="sm"><span class="zh">ROS 2 为主；学习模型按 Skill 固定绑定</span><span class="en">ROS 2-led; learned models fixed to skills</span></span></td>
+                <td class="yes"><span class="m">●</span></td><td class="partial"><span class="m">◐</span></td><td class="partial"><span class="m">◐</span></td>
+                <td class="code">★ 371</td>
+              </tr>
+              <tr>
+                <td>RPent / Harness-VLA<span class="sm"><span class="zh">解析式 primitive + 冻结 VLA</span><span class="en">Analytic primitives + frozen VLAs</span></span></td>
+                <td class="unk"><span class="m">?</span></td><td class="unk"><span class="m">?</span></td><td class="partial"><span class="m">◐</span></td>
+                <td class="code unk"><span class="zh">未核实</span><span class="en">not verified</span></td>
+              </tr>
+              <tr>
+                <td>OpenRAL<span class="sm"><span class="zh">Nav2、MoveIt、ros2_control 与 VLA 统一为 rSkill</span><span class="en">Nav2, MoveIt, ros2_control and VLAs as rSkills</span></span></td>
+                <td class="unk"><span class="m">?</span></td><td class="partial"><span class="m">◐</span></td><td class="partial"><span class="m">◐</span></td>
+                <td class="code unk"><span class="zh">未核实</span><span class="en">not verified</span></td>
+              </tr>
+              <tr>
+                <td>RoboNeuron<span class="sm"><span class="zh">ROS、运动学控制与 VLA 共存</span><span class="en">ROS, kinematic control and VLA in one runtime</span></span></td>
+                <td class="unk"><span class="m">?</span></td><td class="unk"><span class="m">?</span></td><td class="partial"><span class="m">◐</span></td>
+                <td class="code unk"><span class="zh">未核实</span><span class="en">not verified</span></td>
+              </tr>
+              <tr>
+                <td>Cyclo Intelligence<span class="sm"><span class="zh">真机长程流程交替使用两类控制</span><span class="en">Alternates both control types in long real-robot tasks</span></span></td>
+                <td class="unk"><span class="m">?</span></td><td class="unk"><span class="m">?</span></td><td class="partial"><span class="m">◐</span></td>
+                <td class="code"><span class="zh">无</span><span class="en">none</span></td>
+              </tr>
+
+              <tr class="group"><th colspan="5">
+                <span class="zh">D · 平台层 / 后端尚不明确<em>4 个 · 价值主要在 Runtime、调度或技能演化</em></span>
+                <span class="en">D · Platform layer / backend unclear<em>4 · value lies in runtime, scheduling or skill evolution</em></span></th></tr>
+              <tr class="hl">
+                <td><a href="#p-dimos">DimOS</a><span class="sm"><span class="zh">ROS 可选；空间流、记忆与 MCP Skill</span><span class="en">Optional ROS; spatial streams, memory and MCP skills</span></span></td>
+                <td class="yes"><span class="m">●</span></td><td class="unk"><span class="m">?</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code">★ 4.5k</td>
+              </tr>
+              <tr class="hl">
+                <td><a href="#p-roboos">RoboOS</a><span class="sm"><span class="zh">共享状态与多机 Brain → Skill 调度</span><span class="en">Shared state and multi-robot Brain → Skill scheduling</span></span></td>
+                <td class="yes"><span class="m">●</span></td><td class="partial"><span class="m">◐</span></td><td class="no"><span class="m">○</span></td>
+                <td class="code">★ 621</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/OpenMind/OM1" target="_blank" rel="noopener">OpenMind OM1</a><span class="sm"><span class="zh">跨机器人 HAL、Runtime 与插件</span><span class="en">Cross-robot HAL, runtime and plugins</span></span></td>
+                <td class="partial"><span class="m">◐</span></td><td class="unk"><span class="m">?</span></td><td class="unk"><span class="m">?</span></td>
+                <td class="code">★ 2.9k</td>
+              </tr>
+              <tr>
+                <td>CaP-X<span class="sm"><span class="zh">Skill 合成、反馈与技能库演化</span><span class="en">Skill synthesis, feedback and library evolution</span></span></td>
+                <td class="partial"><span class="m">◐</span></td><td class="partial"><span class="m">◐</span></td><td class="unk"><span class="m">?</span></td>
+                <td class="code unk"><span class="zh">未核实</span><span class="en">not verified</span></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td><span class="zh">21 个项目合计</span><span class="en">Across all 21</span></td>
+                <td><b>●</b> 4 · <b>◐</b> 6 · <b>○</b> 5 · <b>?</b> 6</td>
+                <td><b>●</b> 2 · <b>◐</b> 9 · <b>○</b> 4 · <b>?</b> 6</td>
+                <td class="gapcol"><b class="zero">● 0</b> · <b>◐</b> 6 · <b>○</b> 13 · <b>?</b> 2</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="route-note"><i></i><span><span class="zh"><b>怎么读这张表：</b>最右侧的「动态路由」一列没有任何一个 ●——C 组的 5 个项目让两类后端共存，但选择是设计时固定或由 LLM 隐式决定（◐）；其余项目只有单一后端（○）。浅蓝色行是 5 个深拆样本，在 §03 逐项展开。</span>
+          <span class="en"><b>How to read it:</b> the rightmost “dynamic routing” column contains no ● at all. The five projects in group C do run both backends, but the choice is fixed at design time or made implicitly by the LLM (◐); the rest have a single backend (○). Blue rows are the five deep-dive samples, expanded one by one in §03.</span></span></div>
+        <p class="caption"><span class="zh">来源：论文、README 与项目主页（2026-09-11）。深拆样本的取值与 §03 的能力矩阵一致；◐ 与 ? 单元格引用前请核实。</span>
+          <span class="en">Sources: papers, READMEs and project pages as of 11 Sep 2026. Values for the deep-dive samples match the capability matrix in §03; verify ◐ and ? cells before citing.</span></p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================================================================ 03 COVERAGE -->
+    <section id="coverage">
+      <div class="section-head">
+        <div class="section-title">
+          <h2><span class="zh"><span class="section-index">03</span>重点项目 Demo 与能力对比</span><span class="en"><span class="section-index">03</span>Deep-dive demos and capability comparison</span></h2>
+          <p><span class="zh">这里对比的是 5 个深度拆解样本的公开演示材料。</span>
+            <span class="en">This section compares public demonstration material from the five deep-dive samples; it does not imply that only these projects have demos. The other surveyed projects are not expanded here.</span></p>
+        </div>
+      </div>
+
+      <div class="content wide">
         <div class="sub-head"><span class="zh">五个重点样本与 Demo</span><span class="en">Five deep dives and demos</span></div>
         <!-- EDIT: one-line "what to borrow" per system (keep in sync with each card's takeaway) -->
         <nav class="borrow" aria-label="Systems">
@@ -703,14 +800,14 @@
                   data-caption-zh="主动物体搜索：探索、建图，并确认目标咖啡机。" data-caption-en="Active object search: explore, build the map, verify the target coffee machine."
                   data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">物体搜索</span><span class="en">Object search</span></button></li>
                 <li><button data-kind="video" data-src="https://horizonrobotics.github.io/robot_lab/holoagent/video/web/hts-4mbps.mp4"
-                  data-caption-zh="跨机协作：一台机器人导航，另一台执行舞蹈技能。" data-caption-en="Cross-robot coordination: route one robot while another performs a dance skill."
-                  data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">跨机协作</span><span class="en">Cross-robot</span></button></li>
+                  data-caption-zh="机器人伙伴的一天：理解语言、推理 3D 空间、自主导航并完成长程任务。" data-caption-en="A day with a robot companion: language, 3D spatial reasoning, navigation and long-horizon action."
+                  data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">机器人伙伴</span><span class="en">Robot companion</span></button></li>
                 <li><button data-kind="video" data-src="https://horizonrobotics.github.io/robot_lab/holoagent/video/Holoagent-4for1+end.mp4"
                   data-caption-zh="提示式动作控制：执行并验证短程全身指令。" data-caption-en="Prompt motion control: execute and verify short-horizon whole-body commands."
                   data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">全身动作</span><span class="en">Whole-body motion</span></button></li>
                 <li><button data-kind="video" data-src="https://horizonrobotics.github.io/robot_lab/holoagent/video/web/one_day_for_robotic-4mbps.mp4"
-                  data-caption-zh="与机器人伙伴的一天（长程、多技能）。" data-caption-en="A day with a robot companion (long-horizon, mixed skills)."
-                  data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">机器人的一天</span><span class="en">A day with a robot</span></button></li>
+                  data-caption-zh="机器人导览员的一天：引路、响应意图请求，并借助空间记忆调整路线。" data-caption-en="A day as a robot guide: leading the way, answering intent-driven requests, adapting routes via spatial memory."
+                  data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">机器人导览</span><span class="en">Robot guide</span></button></li>
                 <li><button data-kind="video" data-src="https://horizonrobotics.github.io/robot_lab/holoagent/video/web/instruction_follow-1-4mbps.mp4"
                   data-caption-zh="交互式人形指令执行。" data-caption-en="Interactive humanoid command execution."
                   data-origin="https://horizonrobotics.github.io/robot_lab/holoagent/"><span class="zh">人形指令</span><span class="en">Humanoid commands</span></button></li>
@@ -849,9 +946,6 @@
                 <li><button data-kind="bilibili" data-src="BV1q9uc6tEqJ"
                   data-caption-zh="完整演示，5:44（B 站）。" data-caption-en="Full demo, 5:44 (Bilibili)."
                   data-origin="https://www.bilibili.com/video/BV1q9uc6tEqJ/"><span class="zh">完整演示 · B 站</span><span class="en">Full demo · Bilibili</span></button></li>
-                <li><button data-kind="youtube" data-src="Sm9jFmfnOF0"
-                  data-caption-zh="完整演示，5:44（YouTube）。" data-caption-en="Full demo, 5:44 (YouTube)."
-                  data-origin="https://youtu.be/Sm9jFmfnOF0"><span class="zh">完整演示 · YouTube</span><span class="en">Full demo · YouTube</span></button></li>
               </ul>
             </div>
 
@@ -1023,22 +1117,7 @@
             </ul>
           </details>
         </article>
-      </div>
-    </section>
 
-    <!-- ================================================================ 04 COVERAGE -->
-    <section id="coverage">
-      <div class="section-head">
-        <div class="section-no">04<span class="lbl"><span class="zh">Demo 对比</span><span class="en">Demo comparison</span></span></div>
-        <div class="section-title">
-          <h2><span class="zh">重点项目 Demo 与能力对比</span><span class="en">Deep-dive demos and capability comparison</span></h2>
-          <p><span class="zh">这里对比的是 5 个深度拆解样本的公开演示材料，并不表示只有这些项目有 Demo；其余项目仍保留在 Landscape 目录中，暂未逐一展开。</span>
-            <span class="en">This section compares public demonstration material from the five deep-dive samples; it does not imply that only these projects have demos. The remaining projects stay in the Landscape directory and are not expanded here.</span></p>
-        </div>
-      </div>
-
-      <div class="content wide">
-        <div id="demo-deep-dives-mount"></div>
         <div class="key-row">
           <span class="yes"><span class="m">●</span><span class="zh">有文档且有展示</span><span class="en">documented &amp; shown</span></span>
           <span class="partial"><span class="m">◐</span><span class="zh">部分 / 仅声称</span><span class="en">partial / claimed</span></span>
@@ -1198,19 +1277,20 @@
       </div>
     </section>
 
-    <!-- ================================================================ 05 GAP -->
-    <section id="gap">
+    <!-- ================================================================ 04 ROBOCLAW -->
+    <section id="roboclaw">
       <div class="section-head">
-        <div class="section-no">05<span class="lbl"><span class="zh">缺口</span><span class="en">Gap</span></span></div>
         <div class="section-title">
-          <h2><span class="zh">关键挑战：异构控制器如何在闭环中可靠协作？</span><span class="en">The key challenge: how can heterogeneous controllers work reliably in a closed loop?</span></h2>
-          <p><span class="zh">把 ROS 与 VLA 封装成 LLM 可调用的 Skill 已有多种实现；真正尚未成熟的是从选择、交权和监控到恢复、状态更新与经验反馈的完整闭环。</span>
-            <span class="en">Several systems already expose ROS and VLA as LLM-callable skills. What remains immature is the full loop spanning selection, handoff and monitoring through recovery, state updates and experience feedback.</span></p>
+          <h2><span class="zh"><span class="section-index">04</span>项目全景</span><span class="en"><span class="section-index">04</span>Project landscape</span></h2>
+          <p><span class="zh">前面三节梳理了现有项目，空白落在同一处：没有人把异构控制器的选择做成显式、可验证的一层。这一节先说清楚这个瓶颈，再说 RoboClaw 打算怎么补。</span>
+            <span class="en">The previous three sections survey existing projects, and they leave the same blank: nobody makes heterogeneous controller choice an explicit, verifiable layer. This section states that bottleneck first, then what RoboClaw does about it.</span></p>
         </div>
       </div>
 
       <div class="content">
-        <!-- EDIT: gap statements -->
+        <div class="sub-head" style="margin-top:0"><span class="zh">一 · 瓶颈不在单个后端，在它们之间</span><span class="en">1 · The bottleneck is not either backend, it is the seam between them</span></div>
+        <p class="reading"><span class="zh">把 ROS 与 VLA 封装成 LLM 可调用的 Skill 已经有很多实现。两类后端各自的强项和失效方式都很清楚，麻烦的是它们的<b>验证方式根本不同</b>——一侧有解析式后置条件，另一侧连“结束”都要靠外部检测器判断。</span>
+          <span class="en">Exposing ROS and VLA as LLM-callable skills is well-trodden. Each backend has clear strengths and clear failure modes; the trouble is that they <b>are verified in completely different ways</b> — one has analytic post-conditions, the other has no natural end signal at all.</span></p>
         <div class="gap-box">
           <div class="gap-panel">
             <div class="tag"><span class="zh">A · 确定性</span><span class="en">A · Deterministic</span></div>
@@ -1238,13 +1318,9 @@
           </div>
         </div>
 
-        <div class="question">
-          <div class="lbl"><span class="zh">需要回答的问题</span><span class="en">The question to answer</span></div>
-          <p><span class="zh">如何让 Agent 在 ROS 与 VLA 等异构控制器之间可靠选择、阶段性交权，并在执行过程中持续监控、恢复和更新世界状态？</span>
-            <span class="en">How can an agent reliably choose and hand off between heterogeneous controllers such as ROS and VLA, while continuously monitoring execution, recovering from failure and updating world state?</span></p>
-        </div>
-
-        <div class="sub-head" style="margin-top:0"><span class="zh">各系统目前的做法</span><span class="en">How each system answers it today</span></div>
+        <div class="sub-head"><span class="zh">二 · 现有系统目前怎么处理这件事</span><span class="en">2 · How existing systems handle it today</span></div>
+        <p class="reading"><span class="zh">五个深拆样本里，没有一个把“选哪个后端”当成运行时的决策：要么在设计时就绑死，要么交给 LLM 隐式判断，要么根本不涉及。</span>
+          <span class="en">None of the five deep-dive samples treats “which backend” as a runtime decision: it is either bound at design time, left implicit to the LLM, or never posed.</span></p>
         <ul class="today">
           <li><b>HoloAgent-0</b><span class="how"><span class="zh">固定</span><span class="en">Fixed</span></span>
             <span><span class="zh">每类技能在设计时绑定一个后端。</span><span class="en">Each skill type maps to one backend at design time.</span></span></li>
@@ -1257,15 +1333,38 @@
           <li><b>Hi-VLA Design Study</b><span class="how"><span class="zh">未涉及</span><span class="en">Not posed</span></span>
             <span><span class="zh">只有 VLA，但展示了如何更好地调用 VLA。</span><span class="en">VLA only, though it shows how to call VLAs well.</span></span></li>
         </ul>
+
+        <div class="question">
+          <div class="lbl"><span class="zh">需要回答的问题</span><span class="en">The question to answer</span></div>
+          <p><span class="zh">如何让 Agent 在 ROS 与 VLA 等异构控制器之间可靠选择、阶段性交权，并在执行过程中持续监控、恢复和更新世界状态？</span>
+            <span class="en">How can an agent reliably choose and hand off between heterogeneous controllers such as ROS and VLA, while continuously monitoring execution, recovering from failure and updating world state?</span></p>
+        </div>
+
+        <div class="sub-head"><span class="zh">三 · RoboClaw：把缺的那一层补上</span><span class="en">3 · RoboClaw: building the missing layer</span></div>
+        <p class="reading"><span class="zh">RoboClaw 的出发点是不把这件事留给 Prompt：让“选哪个后端”成为 Runtime 里一个显式、带理由、可回放的决策，并且它的输入（世界状态）和输出（验证证据）都挂在同一个闭环上。目标不是再做一个聊天式控制入口，而是让机器人在长程任务中持续理解世界、选择执行方式、验证结果，并从经验中变得更可靠。</span>
+          <span class="en">RoboClaw starts from one decision: keep this out of the prompt. “Which backend” becomes an explicit, reasoned, replayable decision inside the runtime, with its input (world state) and its output (verification evidence) hanging on the same loop. The goal is not another chat control surface, but a runtime that understands the world, selects execution backends, verifies outcomes and becomes more reliable through experience.</span></p>
+      </div>
+
+      <div class="content wide">
+        <div class="roboclaw-vision">
+          <p class="reading"><b><span class="zh">总体方向：</span><span class="en">General direction:</span></b><span class="zh">以统一世界状态为基础，把 Agent 决策、Skill Graph、ROS/VLA 混合执行、验证恢复和经验演化串成一个闭环。</span><span class="en">build one closed loop over a unified world state: agent decisions, skill graphs, hybrid ROS/VLA execution, verification and recovery, then experience-driven evolution.</span></p>
+          <div class="direction-grid">
+            <article class="direction"><div class="n">01</div><h3><span class="zh">理解世界</span><span class="en">Understand</span></h3><p><span class="zh">时间记忆、3D 空间记忆、对象与机器人状态形成统一 World State。</span><span class="en">Temporal memory, 3D spatial memory, objects and robot state form one world state.</span></p></article>
+            <article class="direction"><div class="n">02</div><h3><span class="zh">组织任务</span><span class="en">Organize</span></h3><p><span class="zh">Context Builder 控制上下文；Skill Graph 表达依赖、分支、并行和资源约束。</span><span class="en">A context builder manages attention while skill graphs express dependencies, branches, parallelism and resources.</span></p></article>
+            <article class="direction"><div class="n">03</div><h3><span class="zh">选择执行</span><span class="en">Choose</span></h3><p><span class="zh">根据几何、接触、风险和历史表现，在确定性 ROS 技能与 VLA 策略之间路由。</span><span class="en">Route between deterministic ROS skills and VLA policies from geometry, contact, risk and prior performance.</span></p></article>
+            <article class="direction"><div class="n">04</div><h3><span class="zh">验证与恢复</span><span class="en">Verify</span></h3><p><span class="zh">动作完成由证据判断；失败后重试、重观察、重规划、切换后端或请求协助。</span><span class="en">Evidence decides completion; failures trigger retry, re-observation, replanning, backend switching or assistance.</span></p></article>
+            <article class="direction"><div class="n">05</div><h3><span class="zh">积累与演化</span><span class="en">Evolve</span></h3><p><span class="zh">从执行记录提取 Skill Experience，生成候选技能，经评测后再替换旧版本。</span><span class="en">Extract skill experience from traces, propose candidates and promote them only after evaluation.</span></p></article>
+          </div>
+          <div class="vision-loop"><span class="zh">Observe → Build Context → Plan → Route → Execute → Verify → Recover → Learn</span><span class="en">Observe → Build Context → Plan → Route → Execute → Verify → Recover → Learn</span></div>
+        </div>
       </div>
     </section>
 
-    <!-- ================================================================ 06 PROPOSAL -->
+    <!-- ============================================= PROPOSAL (hidden; detail for §04) -->
     <section id="harness" hidden>
       <div class="section-head">
-        <div class="section-no">06<span class="lbl"><span class="zh">方案</span><span class="en">Proposal</span></span></div>
         <div class="section-title">
-          <h2><span class="zh">把路由做成显式、可验证的一层</span><span class="en">Make routing an explicit, verifiable layer</span></h2>
+          <h2><span class="zh"><span class="section-index">04 ·</span>把路由做成显式、可验证的一层</span><span class="en"><span class="section-index">04 ·</span>Make routing an explicit, verifiable layer</span></h2>
           <p><span class="zh">复用现有系统已经验证的模块，把隐式或固定的后端选择推进为显式、可记录、可验证的路由层。</span>
             <span class="en">Reuse modules already validated by existing systems, then turn implicit or fixed backend choice into an explicit, logged and verifiable routing layer.</span></p>
         </div>
@@ -1347,19 +1446,18 @@
           <div class="req"><b>R2</b><span class="zh">每个规划步骤都是带前置 / 后置条件的类型化技能。</span><span class="en">Every plan step is a typed skill with pre/post-conditions.</span>
             <span class="from">HoloAgent-0</span></div>
           <div class="req"><b>R3</b><span class="zh">每次 ROS / VLA 选择都要显式记录并附理由。</span><span class="en">Every ROS-vs-VLA choice is explicit and logged with its reason.</span>
-            <span class="from"><span class="zh">新增：§05 的缺口</span><span class="en">new: the gap in §05</span></span></div>
+            <span class="from"><span class="zh">新增：§04 的缺口</span><span class="en">new: the gap in §04</span></span></div>
           <div class="req"><b>R4</b><span class="zh">只有评估器给出证据才算完成，模型自述不算。</span><span class="en">A step is done only on evaluator evidence, never on the model saying so.</span>
             <span class="from">Thea · Hi-VLA Design Study · plan.md P0-5</span></div>
         </div>
       </div>
     </section>
 
-    <!-- ================================================================ 07 REFERENCES -->
+    <!-- ================================================================ 05 REFERENCES -->
     <section id="refs">
       <div class="section-head">
-        <div class="section-no">06<span class="lbl"><span class="zh">参考</span><span class="en">References</span></span></div>
         <div class="section-title">
-          <h2><span class="zh">参考与链接</span><span class="en">References &amp; links</span></h2>
+          <h2><span class="zh"><span class="section-index">05</span>参考与链接</span><span class="en"><span class="section-index">05</span>References &amp; links</span></h2>
           <p><span class="zh">链接状态与 GitHub star 核对于 2026-09-11。</span><span class="en">Link status and GitHub stars checked 11 Sep 2026.</span></p>
         </div>
       </div>
@@ -1408,9 +1506,8 @@
     </section>
 
     <footer>
-      <span class="zh">视频与 GIF 直接从各项目官方页面加载，需要联网。从 <code>file://</code> 打开时 YouTube 可能无法播放；可在 <code>report/</code> 下运行 <code>python -m http.server</code>，或切换到 B 站片段。</span>
-      <span class="en">Videos and GIFs stream from each project’s official page, so an internet connection is needed. YouTube may refuse to play in a page opened
-        from <code>file://</code>. If so, run <code>python -m http.server</code> in <code>report/</code>, or use the Bilibili tab.</span>
+      <span class="zh">视频与 GIF 直接从各项目官方页面加载，需要联网。B 站片段在 <code>file://</code> 下若无法播放，可在 <code>report/</code> 下运行 <code>python -m http.server</code> 后打开。</span>
+      <span class="en">Videos and GIFs stream from each project’s official page, so an internet connection is needed. If the Bilibili clip will not play from <code>file://</code>, run <code>python -m http.server</code> in <code>report/</code>.</span>
     </footer>
   </main>
 
@@ -1418,35 +1515,6 @@
     var TITLES = { zh: '机器人 Agent Harness 调研', en: 'Robot Agent Harness Landscape' };  // EDIT: page titles
     function currentLang() { return document.documentElement.getAttribute('data-lang') || 'zh'; }
     var captionRenderers = [];
-
-    // Information architecture: research taxonomy belongs to Technology Map;
-    // project videos belong to Demo Comparison; #systems is RoboClaw's own vision.
-    (function () {
-      var systemsContent = document.querySelector('#systems > .content.wide');
-      var landscapeContent = document.querySelector('#landscape > .content.wide');
-      var demoMount = document.getElementById('demo-deep-dives-mount');
-      if (!systemsContent || !landscapeContent || !demoMount) return;
-
-      var catalogNodes = [
-        systemsContent.querySelector('.terms'),
-        systemsContent.querySelector('.terms + .reading'),
-        systemsContent.querySelector('.terms + .reading + .sub-head'),
-        systemsContent.querySelector('.route-groups'),
-        systemsContent.querySelector('.route-note')
-      ].filter(Boolean);
-      var catalogWrap = document.createElement('div');
-      catalogWrap.className = 'technology-catalog';
-      catalogNodes.forEach(function (node) { catalogWrap.appendChild(node); });
-      landscapeContent.appendChild(catalogWrap);
-
-      var demoHeading = systemsContent.querySelector('.sub-head');
-      if (demoHeading) demoMount.appendChild(demoHeading);
-      var demoNav = systemsContent.querySelector('.borrow');
-      if (demoNav) demoMount.appendChild(demoNav);
-      Array.prototype.slice.call(systemsContent.querySelectorAll('.project')).forEach(function (project) {
-        demoMount.appendChild(project);
-      });
-    })();
 
     // Demo players: each .demo-box[data-demo] renders its active clip button into the stage.
     (function () {
