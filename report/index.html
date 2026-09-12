@@ -108,12 +108,12 @@
 
     /* ---------- sections ---------- */
     section { padding: 72px var(--pad-x); border-bottom: 1px solid var(--line); }
-    .section-head { margin: 0 0 36px var(--gutter); }
+    .section-head { margin: 0 0 36px; }
     .section-title h2 { font-size: 30px; margin-bottom: 8px; }
     .section-title h2 .section-index { color: var(--accent); margin-right: .45em; }
     .section-title p { margin: 0; max-width: 760px; color: var(--muted); font-size: 16.5px; }
 
-    .content { max-width: 920px; margin-left: var(--gutter); }
+    .content { max-width: 920px; margin-left: 0; }
     .content.wide { max-width: none; margin-left: 0; }
     .sub-head { font-size: 12.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700;
       margin: 48px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
@@ -163,10 +163,9 @@
     .compare { min-width: 880px; }
     .compare col.c0 { width: 300px; }
     .compare col.c4 { width: 104px; }
-    .compare thead th { text-align: center; font-size: 12.5px; line-height: 1.35; }
-    .compare thead th:first-child { text-align: left; }
+    .compare thead th { font-size: 12.5px; line-height: 1.35; }
     .compare thead th.gapcol, .compare tfoot td.gapcol { background: var(--accent-soft); color: var(--accent); }
-    .compare td:not(:first-child) { text-align: center; vertical-align: middle; }
+    .compare td:not(:first-child) { vertical-align: middle; }
     .compare td:first-child { font-weight: 650; }
     .compare td:first-child a { color: var(--text); }
     .compare .m { width: auto; font-size: 18px; line-height: 1; }
@@ -242,7 +241,7 @@
     .direction .n { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
     .direction h3 { font-size: 17px; margin: 18px 0 8px; }
     .direction p { color: var(--text-2); font-size: 13.5px; margin: 0; }
-    .vision-loop { margin-top: 26px; padding: 18px 22px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-weight: 650; text-align: center; }
+    .vision-loop { margin-top: 26px; padding: 18px 22px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-weight: 650; }
     .landscape-thesis { margin: 0 0 28px; padding: 22px 26px; border: 1px solid #cbdceb; border-left: 4px solid var(--accent); background: var(--accent-soft); }
     .landscape-thesis .eyebrow { display: block; margin-bottom: 7px; color: var(--accent); font-size: 11.5px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
     .landscape-thesis p { margin: 0; color: var(--text); font-size: clamp(17px, 2vw, 21px); line-height: 1.6; font-weight: 620; text-wrap: balance; }
@@ -272,9 +271,9 @@
     .gap-panel dt { color: var(--muted); }
     .gap-panel dd { margin: 0; color: var(--text-2); }
 
-    .question { margin: 32px 0; padding: 24px 8px; text-align: center; border-top: 2px solid var(--accent); border-bottom: 1px solid var(--line); }
+    .question { margin: 32px 0; padding: 24px 0; border-top: 2px solid var(--accent); border-bottom: 1px solid var(--line); }
     .question .lbl { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
-    .question p { font-size: clamp(20px, 2.5vw, 26px); line-height: 1.4; letter-spacing: -.01em; margin: 8px auto 0; max-width: 760px; font-weight: 600; text-wrap: balance; }
+    .question p { font-size: clamp(20px, 2.5vw, 26px); line-height: 1.4; letter-spacing: -.01em; margin: 8px 0 0; max-width: 760px; font-weight: 600; text-wrap: balance; }
 
     .today { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
     .today li { display: grid; grid-template-columns: 130px 110px 1fr; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 14.5px; color: var(--text-2); }
@@ -283,8 +282,8 @@
 
     /* ---------- proposal ---------- */
     .proposal { border: 1px solid var(--line); padding: 32px 28px; background: #fbfcfd; }
-    .flow { display: grid; justify-items: center; gap: 7px; }
-    .node { width: min(600px, 100%); padding: 12px 18px; border: 1px solid var(--line); background: #fff; text-align: center; }
+    .flow { display: grid; justify-items: start; gap: 7px; }
+    .node { width: min(600px, 100%); padding: 12px 18px; border: 1px solid var(--line); background: #fff; }
     .node .t { font-weight: 700; font-size: 15px; }
     .node .d { color: var(--muted); font-size: 13px; margin-top: 2px; line-height: 1.5; }
     .node.new { border: 2px solid var(--accent); background: var(--accent-soft); }
@@ -311,8 +310,6 @@
     .refs .w { color: var(--muted); }
     .refs a { margin-right: 12px; white-space: nowrap; }
 
-    footer { padding: 32px var(--pad-x) 52px; color: var(--muted); font-size: 13px; }
-    footer code { background: var(--line-soft); padding: 1px 5px; border-radius: 2px; }
 
     .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(15,20,25,.88); display: grid; place-items: center; padding: 32px; cursor: zoom-out; }
     .lightbox img { max-width: 100%; max-height: 100%; background: #fff; }
@@ -362,8 +359,8 @@
       <div class="eyebrow"><span class="zh">文献与项目调研 · 2026 年 9 月</span><span class="en">Literature &amp; project review · September 2026</span></div>
       <h1><span class="zh">机器人 Agent Harness：现状与缺口</span><span class="en">Robot Agent Harnesses: Where the Field Stands</span></h1>
       <p class="thesis">
-        <span class="zh">当前机器人 Agent 已经能调用 ROS 技能或 VLA 策略；同时接入两类后端、并依据任务状态显式路由的项目仍然偏少。</span>
-        <span class="en">Current robot agents can already call ROS skills or VLA policies. Far fewer systems connect both backends and route between them explicitly from task state.</span>
+        <span class="zh">现在的机器人 Agent 大多能调 ROS 技能或 VLA 策略，但两类都接、还能根据任务状态决定用哪个的项目很少。</span>
+        <span class="en">Most robot agents today can call either ROS skills or VLA policies. Very few connect both and decide which one to use based on task state.</span>
       </p>
       <div class="meta">
 
@@ -405,9 +402,9 @@
           </article>
           <article class="summary-item key">
             <div class="index">03 · <span class="zh">缺口</span><span class="en">the gap</span></div>
-            <h3><span class="zh">显式 ROS / VLA 路由仍是少数</span><span class="en">Explicit ROS / VLA routing is still uncommon</span></h3>
-            <p><span class="zh">Thea 已让 Agent 在多个 VLA 工具间选择，是最接近的深度样本；OpenRAL、RoboNeuron 与 Cyclo 也让 ROS 和 VLA 共存。但基于能力、风险与历史成功率进行在线路由，公开实现仍不成熟。</span>
-              <span class="en">Thea already lets an agent choose among VLA tools and is the closest deep-dive example; OpenRAL, RoboNeuron and Cyclo also combine ROS and VLA. Public implementations of online routing based on competence, risk and prior success remain immature.</span></p>
+            <h3><span class="zh">能在 ROS 和 VLA 之间切换的很少</span><span class="en">Few can switch between ROS and VLA</span></h3>
+            <p><span class="zh">Thea 能让 Agent 在几个 VLA 之间挑，是深拆样本里最接近的；OpenRAL、RoboNeuron、Cyclo 里 ROS 和 VLA 都有。但根据能力、风险和历史成功率现场决定用哪个，目前还没有成熟的公开实现。</span>
+              <span class="en">Thea lets the agent pick among several VLAs, the closest of the deep dives; OpenRAL, RoboNeuron and Cyclo include both ROS and VLA. But no public implementation yet decides on the spot, from capability, risk and past success rate, which one to use.</span></p>
           </article>
         </div>
 
@@ -428,7 +425,7 @@
                 <td><a href="#p-dimos">DimOS</a>
                   <span class="sm"><span class="zh">Dimensional · 开源持续活跃 · ★4.5k</span><span class="en">Dimensional · open source, active · ★4.5k</span></span></td>
                 <td><span class="idea"><span class="zh">传感器流 + MCP skill + 空间记忆</span><span class="en">Sensor streams + MCP skills + spatial memory</span></span>
-                  <span class="take"><span class="zh">借鉴：每条观测都带时间戳、坐标系和位姿，后续一切检索都靠它</span><span class="en">Borrow: Stamp every observation with time, frame and pose; all later retrieval rests on it</span></span></td>
+                  <span class="take"><span class="zh">借鉴：每条观测都带时间戳、坐标系和位姿，之后按时间、按位置查都靠这个</span><span class="en">Borrow: stamp every observation with time, frame and pose, so it can later be looked up by time or place</span></span></td>
               </tr>
               <tr>
                 <td><a href="https://github.com/OpenMind/OM1" target="_blank" rel="noopener">OpenMind OM1</a>
@@ -471,16 +468,16 @@
       <div class="section-head">
         <div class="section-title">
           <h2><span class="section-index">02</span>Landscape</h2>
-          <p><span class="zh">横轴表示动作主要由确定性 ROS 技能还是学习型 VLA 策略执行；纵轴表示运行时维护世界状态、记忆、验证与恢复的深度。多数项目强化其中一侧，同时兼顾两类后端和完整闭环的工作仍较少。</span>
-            <span class="en">The horizontal axis shows whether actions are executed mainly by deterministic ROS skills or learned VLA policies. The vertical axis shows how deeply the runtime maintains world state, memory, verification and recovery. Most projects strengthen one side; few combine both backends with a full closed loop.</span></p>
+          <p><span class="zh">横轴：动作主要靠确定性的 ROS 技能，还是学习型的 VLA 策略来执行。纵轴：系统在世界状态、记忆、验证和恢复上做了多少。大多数项目只在一头做得深，两类后端都接、闭环也做全的很少。</span>
+            <span class="en">Horizontal axis: whether actions run mainly on deterministic ROS skills or learned VLA policies. Vertical axis: how much the system does for world state, memory, verification and recovery. Most projects go deep on one end; few connect both backends and close the loop.</span></p>
         </div>
       </div>
 
       <div class="content wide">
         <div class="landscape-thesis">
           <span class="eyebrow"><span class="zh">本次调研的核心判断</span><span class="en">Central finding</span></span>
-          <p><span class="zh">问题已经不再是“能不能把 ROS 和 VLA 都做成 Skill 给 LLM 调用”，而是如何可靠地完成异构控制器选择、阶段性交权、执行监控、失败恢复、世界状态更新，以及基于经验的动态路由。</span>
-            <span class="en">The question is no longer whether ROS and VLA can both be exposed to an LLM as skills. It is how to make heterogeneous controller selection, phased handoff, execution monitoring, failure recovery, world-state updates and experience-driven dynamic routing reliable.</span></p>
+          <p><span class="zh">把 ROS 和 VLA 都包成 Skill 给 LLM 调用，很多项目已经做到了。难的是后面这些：什么时候用哪个、两者怎么交接、执行中怎么盯、失败了怎么恢复、世界状态怎么更新，以及怎么根据以往的执行结果调整选择。</span>
+            <span class="en">Many projects already wrap both ROS and VLA as skills an LLM can call. The hard part comes after: when to use which, how to hand over between them, how to watch execution, how to recover from failure, how to keep world state up to date, and how to adjust choices based on past runs.</span></p>
         </div>
         <!-- EDIT: landscape figure. Move a point by editing its cx/cy and its label x/y (both zh and en <text>).
              Plot area: x 110→860 (deterministic → learned), y 420→40 (stateless → structured). -->
@@ -838,15 +835,15 @@
 
           <!-- EDIT: takeaway -->
           <div class="takeaway">
-            <span class="zh">类型化 skill graph（前置条件、状态、恢复边）正是策略路由器应该接入的那一层。</span>
-            <span class="en">The typed skill graph (preconditions, status, recovery edges) is the layer a policy router should plug into.</span></div>
+            <span class="zh">如果要加一个决定用 ROS 还是 VLA 的路由器，最适合接在它的类型化 skill graph（前置条件、状态、恢复边）上。</span>
+            <span class="en">A router that decides between ROS and VLA would fit best on top of its typed skill graph (preconditions, status, recovery edges).</span></div>
           <details class="evidence">
             <summary><span class="zh">证据说明</span><span class="en">Evidence notes</span></summary>
             <ul>
               <li><span class="zh">记忆为 SLAM + 开放词汇建图之上的“楼层 → 房间 → 视角 → 物体”层级场景图（HMSG）；定量评估只覆盖建图与 HM3D-ObjNav 导航。</span>
                 <span class="en">Memory is a floor → room → view → object scene graph (HMSG) on SLAM + open-vocabulary mapping. Quantitative evaluation covers mapping and HM3D-ObjNav navigation.</span></li>
-              <li><span class="zh">README 提到“AgentOS Harness adapted to OpenClaw”和“dimos-inspired Skill/Blueprint mechanisms”，说明各家正在趋同。</span>
-                <span class="en">The README credits an “AgentOS Harness adapted to OpenClaw” and “dimos-inspired Skill/Blueprint mechanisms”, a sign the field is converging.</span></li>
+              <li><span class="zh">README 提到“AgentOS Harness adapted to OpenClaw”和“dimos-inspired Skill/Blueprint mechanisms”，可见各家在互相借鉴。</span>
+                <span class="en">The README credits an “AgentOS Harness adapted to OpenClaw” and “dimos-inspired Skill/Blueprint mechanisms”, a sign that projects are borrowing from each other.</span></li>
               <li><span class="zh">HoloBrain（操作）与 HoloMotion（全身运动）后端列在即将发布的 HoloAgent-1 中。</span>
                 <span class="en">HoloBrain (manipulation) and HoloMotion (whole-body) backends are listed for the upcoming HoloAgent-1.</span></li>
             </ul>
@@ -925,8 +922,8 @@
             <div class="project-title">
               <div class="project-meta"><span class="kind"><span class="zh">系统</span><span class="en">System</span></span><span class="zh">宁波东方理工大学</span><span class="en">Eastern Institute of Technology, Ningbo</span> · arXiv 2608.11246 · 2026.08</div>
               <h3>Thea</h3>
-              <p><span class="zh">把 coding agent 的 harness 搬到机器人上：策略即工具，场景图即上下文，评估即退出码。</span>
-                <span class="en">The coding-agent harness applied to robots: policies as tools, scene graph as context, evaluation as exit codes.</span></p>
+              <p><span class="zh">照着 coding agent 的做法做机器人：VLA 策略当工具调用，场景图放进上下文，每步动作由评估器判定成败。</span>
+                <span class="en">Built the way coding agents are: VLA policies are called as tools, the scene graph goes into context, and an evaluator judges each action.</span></p>
             </div>
             <div class="chips">
               <span class="chip"><span class="zh">VLA 即工具</span><span class="en">VLAs as tools</span></span>
@@ -969,8 +966,8 @@
           </div>
 
           <div class="takeaway">
-            <span class="zh">评估即退出码 + 按工具积累经验，正好给路由器提供选择后端所需的成功率统计。</span>
-            <span class="en">Evaluation-as-exit-codes plus per-tool experience give a router the success statistics it needs to choose a backend.</span></div>
+            <span class="zh">评估器的判定结果加上按工具记录的经验，正好能算出每个后端的成功率，路由器选后端时可以直接用。</span>
+            <span class="en">The evaluator’s verdicts plus per-tool experience logs give a success rate per backend, which a router can use directly when choosing.</span></div>
           <details class="evidence">
             <summary><span class="zh">证据说明</span><span class="en">Evidence notes</span></summary>
             <ul>
@@ -1187,8 +1184,8 @@
         </div>
 
         <p class="reading" style="margin-top:40px"><b><span class="zh">解读：</span><span class="en">Reading:</span></b>
-          <span class="zh">高亮的三行决定一个运行时能否在后端之间路由；本次深度样本尚未在三行上都达到 ●。</span>
-          <span class="en">the highlighted rows decide whether a runtime can route between backends. None of the deep-dive samples scores ● on all three yet.</span></p>
+          <span class="zh">高亮的三行决定一个系统能不能在后端之间切换；表中四个系统没有一个三行全是 ●。</span>
+          <span class="en">the highlighted rows decide whether a system can switch between backends. None of the four systems in the table gets ● on all three.</span></p>
         <!-- EDIT: capability matrix values -->
         <div class="table-wrap">
           <table class="matrix">
@@ -1282,15 +1279,15 @@
       <div class="section-head">
         <div class="section-title">
           <h2><span class="zh"><span class="section-index">04</span>项目全景</span><span class="en"><span class="section-index">04</span>Project landscape</span></h2>
-          <p><span class="zh">前面三节梳理了现有项目，空白落在同一处：没有人把异构控制器的选择做成显式、可验证的一层。这一节先说清楚这个瓶颈，再说 RoboClaw 打算怎么补。</span>
-            <span class="en">The previous three sections survey existing projects, and they leave the same blank: nobody makes heterogeneous controller choice an explicit, verifiable layer. This section states that bottleneck first, then what RoboClaw does about it.</span></p>
+          <p><span class="zh">看完前面的项目，缺的东西很集中：还没有系统能按情况在 ROS 和 VLA 之间选一个来用，并在执行后检查选得对不对。下面先讲这个问题，再讲 RoboClaw 怎么做。</span>
+            <span class="en">Across the projects above, the missing piece is consistent: no system yet picks between ROS and VLA based on the situation and then checks whether the choice worked. Below: first the problem, then how RoboClaw approaches it.</span></p>
         </div>
       </div>
 
       <div class="content">
-        <div class="sub-head" style="margin-top:0"><span class="zh">一 · 瓶颈不在单个后端，在它们之间</span><span class="en">1 · The bottleneck is not either backend, it is the seam between them</span></div>
-        <p class="reading"><span class="zh">把 ROS 与 VLA 封装成 LLM 可调用的 Skill 已经有很多实现。两类后端各自的强项和失效方式都很清楚，麻烦的是它们的<b>验证方式根本不同</b>——一侧有解析式后置条件，另一侧连“结束”都要靠外部检测器判断。</span>
-          <span class="en">Exposing ROS and VLA as LLM-callable skills is well-trodden. Each backend has clear strengths and clear failure modes; the trouble is that they <b>are verified in completely different ways</b> — one has analytic post-conditions, the other has no natural end signal at all.</span></p>
+        <div class="sub-head" style="margin-top:0"><span class="zh">一 · 问题出在两类后端的衔接上</span><span class="en">1 · The problem is in combining the two backends</span></div>
+        <p class="reading"><span class="zh">把 ROS 和 VLA 包成 Skill 给 LLM 调用，已经有不少项目做到了。两类后端各自擅长什么、在哪会失败，大家也都清楚。麻烦在于<b>检查它们有没有做完、做对，方法完全不同</b>：ROS 可以直接算位姿误差、看关节状态；VLA 没有明确的结束信号，只能靠外部检测器来判断。</span>
+          <span class="en">Plenty of projects already wrap ROS and VLA as skills for an LLM, and what each is good at and where each fails is well understood. The trouble is that <b>checking whether each one finished, and did it right, works completely differently</b>: for ROS you can compute pose error or read joint state; a VLA has no clear end signal, so an external detector has to judge.</span></p>
         <div class="gap-box">
           <div class="gap-panel">
             <div class="tag"><span class="zh">A · 确定性</span><span class="en">A · Deterministic</span></div>
@@ -1318,9 +1315,9 @@
           </div>
         </div>
 
-        <div class="sub-head"><span class="zh">二 · 现有系统目前怎么处理这件事</span><span class="en">2 · How existing systems handle it today</span></div>
-        <p class="reading"><span class="zh">五个深拆样本里，没有一个把“选哪个后端”当成运行时的决策：要么在设计时就绑死，要么交给 LLM 隐式判断，要么根本不涉及。</span>
-          <span class="en">None of the five deep-dive samples treats “which backend” as a runtime decision: it is either bound at design time, left implicit to the LLM, or never posed.</span></p>
+        <div class="sub-head"><span class="zh">二 · 现有系统怎么处理</span><span class="en">2 · What existing systems do</span></div>
+        <p class="reading"><span class="zh">五个深拆样本都没有在运行时决定用哪个后端：有的在设计时就定死了，有的让 LLM 自己判断，有的本来就只有一种后端。</span>
+          <span class="en">None of the five deep dives decides at runtime which backend to use: some fix it at design time, some leave it to the LLM, and some only have one backend.</span></p>
         <ul class="today">
           <li><b>HoloAgent-0</b><span class="how"><span class="zh">固定</span><span class="en">Fixed</span></span>
             <span><span class="zh">每类技能在设计时绑定一个后端。</span><span class="en">Each skill type maps to one backend at design time.</span></span></li>
@@ -1336,13 +1333,13 @@
 
         <div class="question">
           <div class="lbl"><span class="zh">需要回答的问题</span><span class="en">The question to answer</span></div>
-          <p><span class="zh">如何让 Agent 在 ROS 与 VLA 等异构控制器之间可靠选择、阶段性交权，并在执行过程中持续监控、恢复和更新世界状态？</span>
-            <span class="en">How can an agent reliably choose and hand off between heterogeneous controllers such as ROS and VLA, while continuously monitoring execution, recovering from failure and updating world state?</span></p>
+          <p><span class="zh">Agent 怎样在 ROS 和 VLA 之间选对执行方式、在任务中途切换，同时盯住执行过程，出错能恢复，并随时更新对环境的认识？</span>
+            <span class="en">How can an agent pick the right one of ROS and VLA, switch between them mid-task, keep watch on execution, recover from errors, and keep its picture of the environment up to date?</span></p>
         </div>
 
-        <div class="sub-head"><span class="zh">三 · RoboClaw：把缺的那一层补上</span><span class="en">3 · RoboClaw: building the missing layer</span></div>
-        <p class="reading"><span class="zh">RoboClaw 的出发点是不把这件事留给 Prompt：让“选哪个后端”成为 Runtime 里一个显式、带理由、可回放的决策，并且它的输入（世界状态）和输出（验证证据）都挂在同一个闭环上。目标不是再做一个聊天式控制入口，而是让机器人在长程任务中持续理解世界、选择执行方式、验证结果，并从经验中变得更可靠。</span>
-          <span class="en">RoboClaw starts from one decision: keep this out of the prompt. “Which backend” becomes an explicit, reasoned, replayable decision inside the runtime, with its input (world state) and its output (verification evidence) hanging on the same loop. The goal is not another chat control surface, but a runtime that understands the world, selects execution backends, verifies outcomes and becomes more reliable through experience.</span></p>
+        <div class="sub-head"><span class="zh">三 · RoboClaw 怎么做</span><span class="en">3 · What RoboClaw does</span></div>
+        <p class="reading"><span class="zh">RoboClaw 不把“用哪个后端”交给 LLM 在 Prompt 里顺手决定，而是在 Runtime 里单独做这一步：每次选择都记下依据，事后可以回放；决定时参考当前的世界状态，执行完再用验证结果检查选得对不对。我们想做的是一个能长时间跑任务的机器人 Runtime：记得住环境、选得对执行方式、查得了结果，并且从过去的执行里越做越稳。</span>
+          <span class="en">RoboClaw doesn’t leave “which backend” for the LLM to settle inside a prompt. The runtime makes that decision as a separate step: each choice is logged with its reasons and can be replayed; it looks at the current world state to decide, and uses the verification result afterwards to check the choice. What we want is a robot runtime that can run long tasks: remember its surroundings, pick the right way to execute, check the results, and get more reliable from past runs.</span></p>
       </div>
 
       <div class="content wide">
@@ -1364,7 +1361,7 @@
     <section id="harness" hidden>
       <div class="section-head">
         <div class="section-title">
-          <h2><span class="zh"><span class="section-index">04 ·</span>把路由做成显式、可验证的一层</span><span class="en"><span class="section-index">04 ·</span>Make routing an explicit, verifiable layer</span></h2>
+          <h2><span class="zh"><span class="section-index">04 ·</span>单独做一个选后端的模块，每次选择都能查</span><span class="en"><span class="section-index">04 ·</span>A separate module that picks the backend, with every choice on record</span></h2>
           <p><span class="zh">复用现有系统已经验证的模块，把隐式或固定的后端选择推进为显式、可记录、可验证的路由层。</span>
             <span class="en">Reuse modules already validated by existing systems, then turn implicit or fixed backend choice into an explicit, logged and verifiable routing layer.</span></p>
         </div>
@@ -1505,10 +1502,6 @@
       </div>
     </section>
 
-    <footer>
-      <span class="zh">视频与 GIF 直接从各项目官方页面加载，需要联网。B 站片段在 <code>file://</code> 下若无法播放，可在 <code>report/</code> 下运行 <code>python -m http.server</code> 后打开。</span>
-      <span class="en">Videos and GIFs stream from each project’s official page, so an internet connection is needed. If the Bilibili clip will not play from <code>file://</code>, run <code>python -m http.server</code> in <code>report/</code>.</span>
-    </footer>
   </main>
 
   <script>
